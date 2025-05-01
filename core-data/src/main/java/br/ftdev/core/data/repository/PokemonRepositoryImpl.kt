@@ -35,8 +35,7 @@ internal class PokemonRepositoryImpl(
         return withContext(Dispatchers.IO) {
             runCatching {
                 pokemonDao.clearAll()
-                fetchAndCachePokemonList(limit = 20, offset = 0).getOrThrow()
-                Unit
+                pokemonDetailsDao.clearAllDetails()
             }
         }
     }
@@ -52,7 +51,6 @@ internal class PokemonRepositoryImpl(
             entities.toDomain()
         }
     }
-
 
     override suspend fun getPokemonDetails(nameOrId: String): Result<PokemonDetails> {
         return withContext(Dispatchers.IO) {
