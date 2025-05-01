@@ -23,4 +23,4 @@ rootProject.name = "PokeDex"
 include(":app")
 include(":core-data")
 include(":core-domain")
-include(":core_ui")
+include(":core-ui")

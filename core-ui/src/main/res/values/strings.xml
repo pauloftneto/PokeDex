@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="error_generic_message">Ocorreu um erro inesperado.</string>
+    <string name="retry">Tentar Novamente</string>
+    <string name="loading">Carregando…</string>
+</resources>

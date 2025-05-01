@@ -4,7 +4,7 @@ plugins {
 }
 
 android {
-    namespace = "br.ftdev.core_domain"
+    namespace = "br.ftdev.core.domain"
     compileSdk = 35
 
     defaultConfig {
