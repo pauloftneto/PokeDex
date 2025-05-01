@@ -14,11 +14,11 @@ import br.ftdev.core.domain.model.PokemonType
 private const val POKEMON_IMAGE_URL = "https://raw.githubusercontent.com/PokeAPI/" +
         "sprites/master/sprites/pokemon/other/official-artwork/"
 
-fun extractIdFromUrl(url: String): Int? {
+internal fun extractIdFromUrl(url: String): Int? {
     return url.trimEnd('/').substringAfterLast('/').toIntOrNull()
 }
 
-fun PokemonListItemResponse.toEntity(): PokemonEntity? {
+internal fun PokemonListItemResponse.toEntity(): PokemonEntity? {
     val pokemonId = extractIdFromUrl(url) ?: return null
     val imageUrl = POKEMON_IMAGE_URL.plus("${pokemonId}.png")
     return PokemonEntity(
@@ -28,7 +28,7 @@ fun PokemonListItemResponse.toEntity(): PokemonEntity? {
     )
 }
 
-fun PokemonEntity.toDomain(): Pokemon {
+internal fun PokemonEntity.toDomain(): Pokemon {
     return Pokemon(
         id = id,
         name = name.replaceFirstChar {
@@ -38,11 +38,11 @@ fun PokemonEntity.toDomain(): Pokemon {
     )
 }
 
-fun List<PokemonEntity>.toDomain(): List<Pokemon> {
+internal fun List<PokemonEntity>.toDomain(): List<Pokemon> {
     return this.map { it.toDomain() }
 }
 
-fun PokemonDetailsResponse.toDomain(): PokemonDetails {
+internal fun PokemonDetailsResponse.toDomain(): PokemonDetails {
     return PokemonDetails(
         id = id,
         name = name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() },

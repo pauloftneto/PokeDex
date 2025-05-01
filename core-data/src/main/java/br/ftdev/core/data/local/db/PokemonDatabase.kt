@@ -10,6 +10,6 @@ import br.ftdev.core.data.local.entity.PokemonEntity
     version = 1,
     exportSchema = false
 )
-abstract class PokemonDatabase : RoomDatabase() {
+internal abstract class PokemonDatabase : RoomDatabase() {
     abstract fun pokemonDao(): PokemonDao
 }

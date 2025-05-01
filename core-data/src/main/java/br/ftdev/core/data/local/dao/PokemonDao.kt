@@ -7,7 +7,7 @@ import androidx.room.Query
 import br.ftdev.core.data.local.entity.PokemonEntity
 
 @Dao
-interface PokemonDao {
+internal interface PokemonDao {
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAll(pokemonList: List<PokemonEntity>)
