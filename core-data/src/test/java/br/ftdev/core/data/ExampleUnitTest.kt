@@ -1,4 +1,4 @@
-package br.ftdev.core_data
+package br.ftdev.core.data
 
 import org.junit.Test
 
