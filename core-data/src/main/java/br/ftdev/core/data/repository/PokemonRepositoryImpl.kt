@@ -1,6 +1,7 @@
 package br.ftdev.core.data.repository
 
 import br.ftdev.core.data.local.dao.PokemonDao
+import br.ftdev.core.data.local.dao.PokemonDetailsDao
 import br.ftdev.core.data.mapper.toDomain
 import br.ftdev.core.data.mapper.toEntity
 import br.ftdev.core.data.remote.api.PokeApiService
@@ -12,9 +13,9 @@ import kotlinx.coroutines.withContext
 
 internal class PokemonRepositoryImpl(
     private val pokeApiService: PokeApiService,
-    private val pokemonDao: PokemonDao
+    private val pokemonDao: PokemonDao,
+    private val pokemonDetailsDao: PokemonDetailsDao
 ) : PokemonRepository {
-
 
     override suspend fun getPokemonList(limit: Int, offset: Int): Result<List<Pokemon>> {
         return withContext(Dispatchers.IO) {
@@ -56,9 +57,26 @@ internal class PokemonRepositoryImpl(
     override suspend fun getPokemonDetails(nameOrId: String): Result<PokemonDetails> {
         return withContext(Dispatchers.IO) {
             runCatching {
+                val cachedDetails = nameOrId.toIntOrNull()?.let { pokemonId ->
+                    pokemonDetailsDao.getDetailsById(pokemonId)?.toDomain()
+                }
+
+                cachedDetails?.let {
+                    Result.success(cachedDetails)
+                } ?: fetchAndCacheDetails(nameOrId)
+
                 val detailsDto = pokeApiService.getPokemonDetails(nameOrId)
                 detailsDto.toDomain()
             }
+        }
+    }
+
+    private suspend fun fetchAndCacheDetails(nameOrId: String): Result<PokemonDetails> {
+        return runCatching {
+            val detailsDto = pokeApiService.getPokemonDetails(nameOrId)
+            val detailsEntity = detailsDto.toEntity()
+            pokemonDetailsDao.insertDetails(detailsEntity)
+            detailsDto.toDomain()
         }
     }
 

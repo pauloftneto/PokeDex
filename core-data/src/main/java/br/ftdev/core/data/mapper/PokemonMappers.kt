@@ -4,8 +4,6 @@ import br.ftdev.core.data.local.entity.PokemonDetailsEntity
 import br.ftdev.core.data.local.entity.PokemonEntity
 import br.ftdev.core.data.remote.response.PokemonDetailsResponse
 import br.ftdev.core.data.remote.response.PokemonListItemResponse
-import br.ftdev.core.data.remote.response.PokemonStatResponse
-import br.ftdev.core.data.remote.response.PokemonTypeResponse
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.domain.model.PokemonDetails
 import br.ftdev.core.domain.model.PokemonStat
@@ -104,24 +102,5 @@ internal fun PokemonDetailsResponse.toDomain(): PokemonDetails {
         weight = weight / 10.0f,
         types = domainTypes,
         stats = domainStats
-    )
-}
-
-private fun PokemonTypeResponse.toDomain(): PokemonType {
-    return PokemonType(
-        name = name.replaceFirstChar { if (it.isLowerCase()) it.titlecase() else it.toString() }
-    )
-}
-
-private fun PokemonStatResponse.toDomain(): PokemonStat {
-    return PokemonStat(
-        name = stat.name.replace('-', ' ')
-            .split(' ')
-            .joinToString(" ") { word ->
-                word.replaceFirstChar {
-                    if (it.isLowerCase()) it.titlecase() else it.toString()
-                }
-            },
-        baseStat = baseStat
     )
 }

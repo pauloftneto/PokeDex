@@ -69,14 +69,14 @@ val dataModule = module {
         ).build()
     }
 
-    single {
-        get<PokemonDatabase>().pokemonDao()
-    }
+    single { get<PokemonDatabase>().pokemonDao() }
+    single { get<PokemonDatabase>().pokemonDetailsDao() }
 
     single<PokemonRepository> {
         PokemonRepositoryImpl(
             pokeApiService = get(),
-            pokemonDao = get()
+            pokemonDao = get(),
+            pokemonDetailsDao = get()
         )
     }
 }
