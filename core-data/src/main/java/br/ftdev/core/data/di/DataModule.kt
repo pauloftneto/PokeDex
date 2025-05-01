@@ -12,7 +12,7 @@ import org.koin.dsl.module
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
-private const val TIMEOUT_SECONDS = 30
+private const val TIMEOUT_SECONDS = 30L
 
 val dataModule = module {
 
