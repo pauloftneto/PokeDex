@@ -34,4 +34,21 @@ android {
 
 dependencies {
     implementation(project(":core-data"))
+
+    // Kotlin & Coroutines
+    implementation(libs.kotlin.stdlib)
+    implementation(libs.kotlinx.coroutines.core)
+    implementation(libs.kotlinx.coroutines.android)
+
+    // Dependency Injection (Koin)
+    // Koin Core features
+    implementation(libs.koin.core)
+    // Koin Android features
+    implementation(libs.koin.android)
+    // Koin for Jetpack Compose (se usar Compose futuramente)
+    // implementation("io.insert-koin:koin-androidx-compose:3.5.3")
+
+    // Koin Test features
+    testImplementation(libs.koin.test)
+    testImplementation(libs.koin.test.junit4)
 }
