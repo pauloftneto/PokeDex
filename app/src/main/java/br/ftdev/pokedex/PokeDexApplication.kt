@@ -3,6 +3,7 @@ package br.ftdev.pokedex
 import android.app.Application
 import br.ftdev.core.data.di.dataModule
 import br.ftdev.core.domain.di.domainModule
+import br.ftdev.feature.pokedex.di.featurePokeDexModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.android.ext.koin.androidLogger
 import org.koin.core.context.startKoin
@@ -17,7 +18,8 @@ class PokeDexApplication : Application() {
             androidContext(this@PokeDexApplication)
             modules(
                 dataModule,
-                domainModule
+                domainModule,
+                featurePokeDexModule
             )
         }
     }

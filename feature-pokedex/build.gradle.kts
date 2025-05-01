@@ -1,11 +1,11 @@
 plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "br.ftdev.core.data"
+    namespace = "br.ftdev.feature.pokedex"
     compileSdk = 35
 
     defaultConfig {
@@ -31,27 +31,51 @@ android {
     kotlinOptions {
         jvmTarget = "11"
     }
+    buildFeatures {
+        compose = true
+    }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
 }
 
 dependencies {
+    implementation(project(":core-domain"))
+    implementation(project(":core-ui"))
+
+    implementation(libs.coil.compose)
+
     // Kotlin & Coroutines
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.core)
     implementation(libs.kotlinx.coroutines.android)
 
-    // Retrofit & Networking
-    implementation(libs.retrofit)
-    implementation(libs.okhttp)
-    implementation(libs.logging.interceptor)
+    // Dependências Principais do Jetpack Compose
+    implementation(platform(libs.androidx.compose.bom))
 
-    // JSON Parsing (Kotlinx Serialization)
-    implementation(libs.kotlinx.serialization.json)
-    // Converter do Retrofit para Kotlinx Serialization
-    implementation(libs.retrofit.kotlinx.serialization.converter)
+    implementation(libs.androidx.ui)
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
+    implementation(libs.androidx.material3)
 
     // Dependency Injection (Koin)
     // Koin Core features
     implementation(libs.koin.core)
     // Koin Android features
     implementation(libs.koin.android)
+    // Koin for Jetpack Compose
+    implementation(libs.koin.androidx.compose)
+
+    // Jetpack Navigation Compose
+    implementation(libs.androidx.navigation.compose)
+
+    // AndroidX Core
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.activity.compose)
 }
