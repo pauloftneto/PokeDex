@@ -1,13 +1,16 @@
 package br.ftdev.core.data.di
 
+import androidx.room.Room
+import br.ftdev.core.data.local.db.PokemonDatabase
 import br.ftdev.core.data.remote.api.PokeApiService
-import br.ftdev.core.data.repository.PokemonRepository
 import br.ftdev.core.data.repository.PokemonRepositoryImpl
+import br.ftdev.core.domain.repository.PokemonRepository
 import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import kotlinx.serialization.json.Json
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
+import org.koin.android.ext.koin.androidContext
 import org.koin.dsl.module
 import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
@@ -55,6 +58,25 @@ val dataModule = module {
 
 
     single<PokemonRepository> {
-        PokemonRepositoryImpl(get())
+        PokemonRepositoryImpl(get(), get())
+    }
+
+    single {
+        Room.databaseBuilder(
+            androidContext(),
+            PokemonDatabase::class.java,
+            "pokemon_database"
+        ).build()
+    }
+
+    single {
+        get<PokemonDatabase>().pokemonDao()
+    }
+
+    single<PokemonRepository> {
+        PokemonRepositoryImpl(
+            pokeApiService = get(),
+            pokemonDao = get()
+        )
     }
 }
