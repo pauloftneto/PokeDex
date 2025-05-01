@@ -22,5 +22,5 @@ dependencyResolutionManagement {
 rootProject.name = "PokeDex"
 include(":app")
 include(":core-data")
-include(":core_domain")
+include(":core-domain")
 include(":core_ui")

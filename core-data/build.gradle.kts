@@ -35,6 +35,9 @@ android {
 
 dependencies {
 
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.appcompat)
+
     // Kotlin & Coroutines
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.core)
@@ -58,14 +61,10 @@ dependencies {
     // Koin for Jetpack Compose (se usar Compose futuramente)
     // implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
-
     // Koin Test features
     testImplementation(libs.koin.test)
     testImplementation(libs.koin.test.junit4)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-
+    
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
