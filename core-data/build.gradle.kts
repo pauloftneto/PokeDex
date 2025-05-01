@@ -34,10 +34,6 @@ android {
 }
 
 dependencies {
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.appcompat)
-
     // Kotlin & Coroutines
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.core)
@@ -64,8 +60,4 @@ dependencies {
     // Koin Test features
     testImplementation(libs.koin.test)
     testImplementation(libs.koin.test.junit4)
-    
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
 }
