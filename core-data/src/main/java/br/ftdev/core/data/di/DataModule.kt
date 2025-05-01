@@ -58,7 +58,7 @@ val dataModule = module {
 
 
     single<PokemonRepository> {
-        PokemonRepositoryImpl(get(), get())
+        PokemonRepositoryImpl(get(), get(), get())
     }
 
     single {

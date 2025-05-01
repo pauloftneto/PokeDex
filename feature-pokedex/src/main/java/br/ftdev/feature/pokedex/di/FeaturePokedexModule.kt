@@ -5,5 +5,5 @@ import org.koin.androidx.viewmodel.dsl.viewModel
 import org.koin.dsl.module
 
 val featurePokeDexModule = module {
-    viewModel { PokeDexViewModel(get()) }
+    viewModel { PokeDexViewModel(get(), get()) }
 }
