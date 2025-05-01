@@ -42,33 +42,23 @@ android {
 dependencies {
     implementation(project(":core-data"))
     implementation(project(":core-domain"))
+    implementation(project(":core-ui"))
+    implementation(project(":feature-pokedex"))
 
     // Dependency Injection (Koin)
     // Koin Core features
     implementation(libs.koin.core)
-    // Koin Android features
     implementation(libs.koin.android)
-    // Koin for Jetpack Compose (se usar Compose futuramente)
-    // implementation("io.insert-koin:koin-androidx-compose:3.5.3")
-
-    // Koin Test features
-    testImplementation(libs.koin.test)
-    testImplementation(libs.koin.test.junit4)
+    implementation(libs.koin.androidx.compose)
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.activity.compose)
+    implementation(libs.androidx.navigation.compose)
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 
 }
