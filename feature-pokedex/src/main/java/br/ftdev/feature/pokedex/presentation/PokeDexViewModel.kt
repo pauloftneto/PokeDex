@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.domain.usecase.GetPokemonListUseCase
+import br.ftdev.core.domain.usecase.RefreshPokemonListUseCase
 import br.ftdev.feature.pokedex.presentation.event.PokeDexUiEvent
 import br.ftdev.feature.pokedex.presentation.state.PokedexUiState
 import kotlinx.coroutines.Job
@@ -16,7 +17,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 
 class PokeDexViewModel(
-    private val getPokemonListUseCase: GetPokemonListUseCase
+    private val getPokemonListUseCase: GetPokemonListUseCase,
+    private val refreshPokemonListUseCase: RefreshPokemonListUseCase
 ) : ViewModel() {
 
     private val _uiState = MutableStateFlow<PokedexUiState>(PokedexUiState.Loading)
@@ -51,7 +53,6 @@ class PokeDexViewModel(
         }
 
         fetchJob = viewModelScope.launch {
-
             getPokemonListUseCase(limit = PAGE_SIZE, offset = currentPage * PAGE_SIZE)
                 .collect { result ->
                     result.onSuccess { newPokemon ->
@@ -63,12 +64,11 @@ class PokeDexViewModel(
                             canLoadMore = canLoadMore
                         )
                     }.onFailure { exception ->
-
                         val errorMsg = exception.message ?: "Erro desconhecido ao buscar Pokémon"
                         if (pokemonList.isEmpty()) {
                             _uiState.value = PokedexUiState.Error(errorMsg)
                             canLoadMore = false
-                        }else {
+                        } else {
                             _eventChannel.emit(PokeDexUiEvent.ShowSnackbar(errorMsg))
                             _uiState.value = PokedexUiState.Success(
                                 pokemonList = pokemonList.toList(),
@@ -78,6 +78,19 @@ class PokeDexViewModel(
                         println("Erro ao carregar Pokémon: $exception")
                     }
                 }
+        }
+    }
+
+    fun refreshList() {
+        viewModelScope.launch {
+            _uiState.value = PokedexUiState.Loading
+            refreshPokemonListUseCase().collect { result ->
+                result.onSuccess {
+                    fetchPokemonList(forceRefresh = true)
+                }.onFailure { exception ->
+                    _uiState.value = PokedexUiState.Error(exception.message ?: "Erro ao atualizar")
+                }
+            }
         }
     }
 }

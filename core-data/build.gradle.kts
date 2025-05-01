@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -34,6 +35,8 @@ android {
 }
 
 dependencies {
+    implementation(project(":core-domain"))
+
     // Kotlin & Coroutines
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.core)
@@ -49,9 +52,16 @@ dependencies {
     // Converter do Retrofit para Kotlinx Serialization
     implementation(libs.retrofit.kotlinx.serialization.converter)
 
+    // Room Persistence Library
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
     // Dependency Injection (Koin)
     // Koin Core features
     implementation(libs.koin.core)
     // Koin Android features
     implementation(libs.koin.android)
+
+    testImplementation(libs.junit)
 }
