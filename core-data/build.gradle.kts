@@ -54,10 +54,4 @@ dependencies {
     implementation(libs.koin.core)
     // Koin Android features
     implementation(libs.koin.android)
-    // Koin for Jetpack Compose (se usar Compose futuramente)
-    // implementation("io.insert-koin:koin-androidx-compose:3.5.3")
-
-    // Koin Test features
-    testImplementation(libs.koin.test)
-    testImplementation(libs.koin.test.junit4)
 }
