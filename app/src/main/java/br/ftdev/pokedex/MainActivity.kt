@@ -23,41 +23,17 @@ class MainActivity : ComponentActivity() {
         }
     }
 
-
     @Composable
     fun AppNavigation() {
-        val navController = rememberNavController() // Cria o controlador de navegação
+        val navController = rememberNavController()
 
         NavHost(
             navController = navController,
-            startDestination = AppDestinations.POKEDEX_ROUTE // Define a tela inicial
+            startDestination = AppDestinations.POKEDEX_ROUTE
         ) {
-            // Define a tela associada à rota POKEDEX_ROUTE
             composable(route = AppDestinations.POKEDEX_ROUTE) {
-                PokedexScreen(
-                    // No futuro, passe o navController para a PokedexScreen
-                    // para que ela possa navegar para os detalhes, por exemplo:
-                    // onPokemonClick = { pokemonId ->
-                    //    navController.navigate("${AppDestinations.POKEMON_DETAIL_ROUTE.replace("{pokemonId}", pokemonId.toString())}")
-                    // }
-                )
+                PokedexScreen()
             }
-
-            // Adicione outras telas/destinos aqui
-            /*
-            composable(
-                route = AppDestinations.POKEMON_DETAIL_ROUTE,
-                arguments = listOf(navArgument("pokemonId") { type = NavType.IntType })
-            ) { backStackEntry ->
-                val pokemonId = backStackEntry.arguments?.getInt("pokemonId")
-                if (pokemonId != null) {
-                    // Chame a tela de detalhes aqui, passando o ID
-                    // PokemonDetailScreen(pokemonId = pokemonId, navController = navController)
-                } else {
-                    // Lidar com erro de ID não encontrado
-                }
-            }
-            */
         }
     }
 }

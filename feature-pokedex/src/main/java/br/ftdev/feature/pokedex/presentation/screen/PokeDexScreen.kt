@@ -33,9 +33,10 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.unit.dp
+import androidx.compose.ui.res.dimensionResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.ftdev.core.domain.model.Pokemon
+import br.ftdev.core.ui.R
 import br.ftdev.core.ui.component.ErrorMessage
 import br.ftdev.core.ui.component.LoadingIndicator
 import br.ftdev.core.ui.theme.PokemonAppTheme
@@ -51,39 +52,35 @@ import org.koin.androidx.compose.koinViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokedexScreen(
-    viewModel: PokeDexViewModel = koinViewModel(), // Injeta ViewModel via Koin
-    // Adicione callbacks de navegação se necessário
-    // onPokemonClick: (Int) -> Unit
+    viewModel: PokeDexViewModel = koinViewModel(),
+    onPokemonClick: (Int) -> Unit = {}
 ) {
-    // Observa o estado principal da UI
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-
-    // Estado para o Snackbar
     val snackbarHostState = remember { SnackbarHostState() }
 
-    // Coleta os eventos one-time do ViewModel
     CollectEvents(eventFlow = viewModel.eventFlow, snackbarHostState = snackbarHostState)
 
-    PokemonAppTheme { // Aplica o tema do core_ui
+    PokemonAppTheme {
         Scaffold(
             topBar = {
-                TopAppBar(title = { Text("Pokédex") }) // Exemplo de TopAppBar
+                TopAppBar(title = { Text("Pokédex") })
             },
-            snackbarHost = { SnackbarHost(hostState = snackbarHostState) } // Host para Snackbar
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
-                    .padding(paddingValues) // Aplica padding do Scaffold
+                    .padding(paddingValues)
             ) {
                 when (val state = uiState) {
                     is PokedexUiState.Loading -> LoadingIndicator()
                     is PokedexUiState.Success -> PokemonGrid(
                         pokemonList = state.pokemonList,
                         canLoadMore = state.canLoadMore,
-                        onLoadMore = { viewModel.fetchPokemonList() }
-                        // onPokemonClick = onPokemonClick // Passa callback de clique
+                        onLoadMore = { viewModel.fetchPokemonList() },
+                        onPokemonClick = onPokemonClick
                     )
+
                     is PokedexUiState.Error -> ErrorMessage(
                         message = state.message,
                         onRetry = { viewModel.fetchPokemonList(forceRefresh = true) }
@@ -99,80 +96,80 @@ fun PokemonGrid(
     pokemonList: List<Pokemon>,
     canLoadMore: Boolean,
     onLoadMore: () -> Unit,
-    modifier: Modifier = Modifier
-    // onPokemonClick: (Int) -> Unit
+    modifier: Modifier = Modifier,
+    onPokemonClick: (Int) -> Unit
 ) {
     val listState = rememberLazyGridState()
 
     LazyVerticalGrid(
-        columns = GridCells.Adaptive(minSize = 120.dp), // Grid adaptável
+        columns = GridCells.Adaptive(minSize = dimensionResource(R.dimen.min_size)),
         state = listState,
         modifier = modifier.fillMaxSize(),
-        contentPadding = PaddingValues(8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp),
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
+        contentPadding = PaddingValues(dimensionResource(R.dimen.padding_medium)),
+        verticalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium)),
+        horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
     ) {
         items(pokemonList, key = { it.id }) { pokemon ->
             PokemonCard(
-                pokemon = pokemon
-                // onClick = { onPokemonClick(pokemon.id) }
+                pokemon = pokemon,
+                onClick = { onPokemonClick(pokemon.id) }
             )
         }
 
-        // Item no final para carregar mais ou indicar fim
         if (canLoadMore) {
             item {
-                // Trigger para carregar mais quando este item estiver próximo de ser visível
                 LaunchedEffect(listState) {
                     snapshotFlow { listState.layoutInfo.visibleItemsInfo }
                         .collect { visibleItems ->
                             val lastVisibleItemIndex = visibleItems.lastOrNull()?.index ?: -1
                             val totalItems = listState.layoutInfo.totalItemsCount
-                            // Carrega mais quando faltarem poucos itens para o fim
+
                             if (lastVisibleItemIndex >= totalItems - 5 && totalItems > 0) {
                                 onLoadMore()
                             }
                         }
                 }
-                // Indicador visual de que está carregando mais
-                Box(modifier = Modifier.fillMaxWidth().padding(16.dp), contentAlignment = Alignment.Center) {
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(dimensionResource(R.dimen.padding_large)),
+                    contentAlignment = Alignment.Center
+                ) {
                     CircularProgressIndicator()
                 }
             }
         }
-        // Opcional: mostrar algo quando não houver mais itens (canLoadMore == false)
-        // item { if (!canLoadMore) Text("Fim da lista") }
     }
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonCard(
     pokemon: Pokemon,
-    modifier: Modifier = Modifier
-    // onClick: () -> Unit
+    modifier: Modifier = Modifier,
+    onClick: () -> Unit
 ) {
     Card(
         modifier = modifier,
-        // onClick = onClick, // Torna o card clicável
-        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
+        onClick = onClick,
+        elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.padding_small))
     ) {
         Column(
-            modifier = Modifier.padding(8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(R.dimen.padding_medium)),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
                     .data(pokemon.imageUrl)
-                    .crossfade(true) // Efeito de fade na imagem
-                    // .placeholder(R.drawable.placeholder) // Adicione um placeholder se quiser
-                    // .error(R.drawable.error_image) // Adicione uma imagem de erro se quiser
+                    .crossfade(true)
                     .build(),
                 contentDescription = pokemon.name,
-                modifier = Modifier.size(96.dp) // Tamanho da imagem
+                modifier = Modifier.size(dimensionResource(R.dimen.image_size))
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
             Text(
                 text = "#${pokemon.id} ${pokemon.name}",
                 style = MaterialTheme.typography.bodyMedium,
@@ -182,14 +179,13 @@ fun PokemonCard(
     }
 }
 
-// Composable para coletar eventos e mostrar Snackbar
 @Composable
 fun CollectEvents(
     eventFlow: SharedFlow<PokeDexUiEvent>,
     snackbarHostState: SnackbarHostState
 ) {
-    LaunchedEffect(key1 = eventFlow) { // Recoleta se o eventFlow mudar (improvável aqui)
-        eventFlow.collectLatest { event -> // collectLatest cancela ações anteriores se um novo evento chegar rápido
+    LaunchedEffect(key1 = eventFlow) {
+        eventFlow.collectLatest { event ->
             when (event) {
                 is PokeDexUiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(
@@ -197,7 +193,6 @@ fun CollectEvents(
                         duration = SnackbarDuration.Short
                     )
                 }
-                // Handle other events here
             }
         }
     }
