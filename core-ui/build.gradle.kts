@@ -1,21 +1,18 @@
 plugins {
-    alias(libs.plugins.android.application)
+    alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
 android {
-    namespace = "br.ftdev.pokedex"
+    namespace = "br.ftdev.core.ui"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "br.ftdev.pokedex"
         minSdk = 24
-        targetSdk = 35
-        versionCode = 1
-        versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        consumerProguardFiles("consumer-rules.pro")
     }
 
     buildTypes {
@@ -37,38 +34,41 @@ android {
     buildFeatures {
         compose = true
     }
+    composeOptions {
+        kotlinCompilerExtensionVersion = "1.5.8"
+    }
+    packaging {
+        resources {
+            excludes += "/META-INF/{AL2.0,LGPL2.1}"
+        }
+    }
 }
 
 dependencies {
-    implementation(project(":core-data"))
-    implementation(project(":core-domain"))
+// Kotlin Standard Library
+    implementation(libs.kotlin.stdlib)
 
-    // Dependency Injection (Koin)
-    // Koin Core features
-    implementation(libs.koin.core)
-    // Koin Android features
-    implementation(libs.koin.android)
-    // Koin for Jetpack Compose (se usar Compose futuramente)
-    // implementation("io.insert-koin:koin-androidx-compose:3.5.3")
-
-    // Koin Test features
-    testImplementation(libs.koin.test)
-    testImplementation(libs.koin.test.junit4)
-
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
+    // Dependências Principais do Jetpack Compose
     implementation(platform(libs.androidx.compose.bom))
+
     implementation(libs.androidx.ui)
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+
+    // AndroidX Core (necessário para algumas funcionalidades do Compose)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(platform(libs.androidx.compose.bom))
+
+    // Testes de UI com Compose
     androidTestImplementation(libs.androidx.ui.test.junit4)
+
+    // Debugging de UI com Compose
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
-
 }
