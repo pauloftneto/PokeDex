@@ -15,6 +15,7 @@
             <option value="$PROJECT_DIR$/core-domain" />
             <option value="$PROJECT_DIR$/core-ui" />
             <option value="$PROJECT_DIR$/feature-pokedex" />
+            <option value="$PROJECT_DIR$/feature-pokedex-details" />
           </set>
         </option>
       </GradleProjectSettings>

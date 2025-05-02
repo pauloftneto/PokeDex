@@ -14,6 +14,7 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.collectLatest
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
@@ -33,6 +34,9 @@ class PokeDexViewModel(
     private val _isRefreshing = MutableStateFlow(false)
     val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
+    private val _searchQuery = MutableStateFlow("")
+    val searchQuery: StateFlow<String> = _searchQuery.asStateFlow()
+
     private val _eventChannel = MutableSharedFlow<PokeDexUiEvent>(replay = 0)
     val eventFlow: SharedFlow<PokeDexUiEvent> = _eventChannel.asSharedFlow()
 
@@ -44,13 +48,42 @@ class PokeDexViewModel(
 
     init {
         fetchPokemonList()
+
+        viewModelScope.launch {
+            searchQuery.collectLatest { query ->
+                filterAndUpdateUi(query)
+            }
+        }
+    }
+
+    fun onSearchQueryChanged(query: String) {
+        _searchQuery.value = query
+    }
+
+    private fun filterAndUpdateUi(query: String) {
+        val currentState = _uiState.value
+
+        if (pokemonList.isNotEmpty()) {
+            val filteredList = if (query.isBlank()) {
+                pokemonList.toList()
+            } else {
+                pokemonList.filter { pokemon ->
+                    pokemon.name.contains(query, ignoreCase = true) ||
+                            pokemon.id.toString() == query.trim()
+                }
+            }
+            _uiState.value = PokedexUiState.Success(
+                pokemonList = filteredList,
+                canLoadMore = canLoadMore
+            )
+        } else if (currentState is PokedexUiState.Success) {
+            _uiState.value = PokedexUiState.Success(emptyList(), false)
+        }
     }
 
     fun fetchPokemonList(forceRefresh: Boolean = false) {
-        if (forceRefresh) {
-            fetchJob?.cancel()
-        } else if (fetchJob?.isActive == true || !canLoadMore) {
-            return
+        if (forceRefresh && !_isRefreshing.value) {
+            cancelFetchListJob()
         }
 
         if (forceRefresh) {
@@ -95,6 +128,16 @@ class PokeDexViewModel(
             )
         }
         println("Erro ao carregar Pokémon: $exception")
+    }
+
+    private fun cancelFetchListJob() {
+        fetchJob?.cancel()
+        fetchJob = null
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        cancelFetchListJob()
     }
 
     fun refreshList() {

@@ -44,6 +44,7 @@ dependencies {
     implementation(project(":core-domain"))
     implementation(project(":core-ui"))
     implementation(project(":feature-pokedex"))
+    implementation(project(":feature-pokedex-details"))
 
     // Dependency Injection (Koin)
     // Koin Core features
@@ -60,9 +61,6 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
-
-    implementation("androidx.room:room-runtime:2.6.1")
-    implementation("androidx.room:room-ktx:2.6.1")
 
     testImplementation(libs.junit)
 

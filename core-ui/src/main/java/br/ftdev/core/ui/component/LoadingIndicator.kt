@@ -28,11 +28,3 @@ fun LoadingIndicator(modifier: Modifier = Modifier, isInitialLoading: Boolean = 
         }
     }
 }
-
-@Preview(showBackground = true)
-@Composable
-private fun LoadingIndicatorPreview() {
-    PokemonAppTheme {
-        LoadingIndicator()
-    }
-}
