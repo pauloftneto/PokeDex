@@ -45,21 +45,3 @@ fun ErrorMessage(
         }
     }
 }
-
-@Preview(showBackground = true, name = "Error Message With Retry")
-@Composable
-private fun ErrorMessageWithRetryPreview() {
-    PokemonAppTheme {
-        ErrorMessage(message = stringResource(id = R.string.error_generic_message)) {
-            // Ação de retry do preview
-        }
-    }
-}
-
-@Preview(showBackground = true, name = "Error Message No Retry")
-@Composable
-private fun ErrorMessageNoRetryPreview() {
-    PokemonAppTheme {
-        ErrorMessage(message = "Algo deu errado e não há o que fazer.")
-    }
-}
