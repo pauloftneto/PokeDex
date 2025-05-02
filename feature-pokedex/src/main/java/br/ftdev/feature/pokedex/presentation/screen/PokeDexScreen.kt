@@ -25,6 +25,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
+import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -56,6 +57,8 @@ fun PokedexScreen(
     onPokemonClick: (Int) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
+
     val snackbarHostState = remember { SnackbarHostState() }
 
     CollectEvents(eventFlow = viewModel.eventFlow, snackbarHostState = snackbarHostState)
@@ -67,24 +70,32 @@ fun PokedexScreen(
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { paddingValues ->
-            Box(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(paddingValues)
+            PullToRefreshBox(
+                isRefreshing = isRefreshing,
+                onRefresh = viewModel::refreshList
             ) {
-                when (val state = uiState) {
-                    is PokedexUiState.Loading -> LoadingIndicator()
-                    is PokedexUiState.Success -> PokemonGrid(
-                        pokemonList = state.pokemonList,
-                        canLoadMore = state.canLoadMore,
-                        onLoadMore = { viewModel.fetchPokemonList() },
-                        onPokemonClick = onPokemonClick
-                    )
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(paddingValues)
+                ) {
+                    when (val state = uiState) {
+                        is PokedexUiState.Loading -> {
+                            LoadingIndicator(isInitialLoading = state.isInitialLoading)
+                        }
 
-                    is PokedexUiState.Error -> ErrorMessage(
-                        message = state.message,
-                        onRetry = { viewModel.fetchPokemonList(forceRefresh = true) }
-                    )
+                        is PokedexUiState.Success -> PokemonGrid(
+                            pokemonList = state.pokemonList,
+                            canLoadMore = state.canLoadMore,
+                            onLoadMore = { viewModel.fetchPokemonList() },
+                            onPokemonClick = onPokemonClick
+                        )
+
+                        is PokedexUiState.Error -> ErrorMessage(
+                            message = state.message,
+                            onRetry = { viewModel.fetchPokemonList(forceRefresh = true) }
+                        )
+                    }
                 }
             }
         }
