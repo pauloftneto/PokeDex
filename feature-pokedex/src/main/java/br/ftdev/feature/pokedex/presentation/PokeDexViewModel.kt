@@ -14,15 +14,24 @@ import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
+
+private const val PAGE_SIZE = 20
+private const val DEFAULT_ERROR_MESSAGE = "Erro desconhecido ao buscar Pokémon"
+private const val REFRESH_ERROR_MESSAGE = "Um erro inesperado ocorreu durante a atualização."
 
 class PokeDexViewModel(
     private val getPokemonListUseCase: GetPokemonListUseCase,
     private val refreshPokemonListUseCase: RefreshPokemonListUseCase
 ) : ViewModel() {
 
-    private val _uiState = MutableStateFlow<PokedexUiState>(PokedexUiState.Loading)
+    private val _uiState =
+        MutableStateFlow<PokedexUiState>(PokedexUiState.Loading(isInitialLoading = true))
     val uiState: StateFlow<PokedexUiState> = _uiState.asStateFlow()
+
+    private val _isRefreshing = MutableStateFlow(false)
+    val isRefreshing: StateFlow<Boolean> = _isRefreshing.asStateFlow()
 
     private val _eventChannel = MutableSharedFlow<PokeDexUiEvent>(replay = 0)
     val eventFlow: SharedFlow<PokeDexUiEvent> = _eventChannel.asSharedFlow()
@@ -32,65 +41,90 @@ class PokeDexViewModel(
     private var fetchJob: Job? = null
     private var canLoadMore = true
 
-    companion object {
-        private const val PAGE_SIZE = 20
-    }
 
     init {
         fetchPokemonList()
     }
 
     fun fetchPokemonList(forceRefresh: Boolean = false) {
-        if (fetchJob?.isActive == true || (!canLoadMore && !forceRefresh)) {
+        if (forceRefresh) {
+            fetchJob?.cancel()
+        } else if (fetchJob?.isActive == true || !canLoadMore) {
             return
         }
 
         if (forceRefresh) {
-            currentPage = 0
-            pokemonList.clear()
-            canLoadMore = true
-            _uiState.value = PokedexUiState.Loading
+            resetState()
         }
 
         fetchJob = viewModelScope.launch {
             getPokemonListUseCase(limit = PAGE_SIZE, offset = currentPage * PAGE_SIZE)
                 .collect { result ->
                     result.onSuccess { newPokemon ->
-                        canLoadMore = newPokemon.size == PAGE_SIZE
-                        pokemonList.addAll(newPokemon)
-                        currentPage++
-                        _uiState.value = PokedexUiState.Success(
-                            pokemonList = pokemonList.toList(),
-                            canLoadMore = canLoadMore
-                        )
+                        handlePokemonFetchSuccess(newPokemon)
                     }.onFailure { exception ->
-                        val errorMsg = exception.message ?: "Erro desconhecido ao buscar Pokémon"
-                        if (pokemonList.isEmpty()) {
-                            _uiState.value = PokedexUiState.Error(errorMsg)
-                            canLoadMore = false
-                        } else {
-                            _eventChannel.emit(PokeDexUiEvent.ShowSnackbar(errorMsg))
-                            _uiState.value = PokedexUiState.Success(
-                                pokemonList = pokemonList.toList(),
-                                canLoadMore = canLoadMore
-                            )
-                        }
-                        println("Erro ao carregar Pokémon: $exception")
+                        handlePokemonFetchFailure(exception)
                     }
                 }
         }
     }
 
-    fun refreshList() {
-        viewModelScope.launch {
-            _uiState.value = PokedexUiState.Loading
-            refreshPokemonListUseCase().collect { result ->
-                result.onSuccess {
-                    fetchPokemonList(forceRefresh = true)
-                }.onFailure { exception ->
-                    _uiState.value = PokedexUiState.Error(exception.message ?: "Erro ao atualizar")
-                }
-            }
+    private fun handlePokemonFetchSuccess(newPokemon: List<Pokemon>) {
+        canLoadMore = newPokemon.size == PAGE_SIZE
+        pokemonList.addAll(newPokemon)
+        if (newPokemon.isNotEmpty()) {
+            currentPage++
         }
+        _uiState.value = PokedexUiState.Success(
+            pokemonList = pokemonList.toList(),
+            canLoadMore = canLoadMore
+        )
+    }
+
+    private suspend fun handlePokemonFetchFailure(exception: Throwable) {
+        val errorMsg = exception.message ?: DEFAULT_ERROR_MESSAGE
+
+        if (pokemonList.isEmpty()) {
+            _uiState.value = PokedexUiState.Error(errorMsg)
+            canLoadMore = false
+        } else {
+            _eventChannel.emit(PokeDexUiEvent.ShowSnackbar(errorMsg))
+            _uiState.value = PokedexUiState.Success(
+                pokemonList = pokemonList.toList(),
+                canLoadMore = false
+            )
+        }
+        println("Erro ao carregar Pokémon: $exception")
+    }
+
+    fun refreshList() {
+        if (_isRefreshing.value) return
+
+        _isRefreshing.value = true
+        viewModelScope.launch {
+            refreshPokemonListUseCase().first()
+                .onSuccess {
+                    fetchPokemonList(forceRefresh = true)
+                }
+                .onFailure { error ->
+                    handleRefreshError(error)
+                }.also {
+                    _isRefreshing.value = false
+                }
+        }
+    }
+
+    private suspend fun handleRefreshError(error: Throwable) {
+        val errorMsg = error.message ?: REFRESH_ERROR_MESSAGE
+        _eventChannel.emit(PokeDexUiEvent.ShowSnackbar(errorMsg))
+    }
+
+    private fun resetState() {
+        currentPage = 0
+        pokemonList.clear()
+        canLoadMore = true
+        _uiState.value = PokedexUiState.Loading(
+            isInitialLoading = _isRefreshing.value.not(),
+        )
     }
 }
