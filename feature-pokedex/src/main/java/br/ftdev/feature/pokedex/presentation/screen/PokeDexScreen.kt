@@ -14,11 +14,19 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
@@ -34,7 +42,9 @@ import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.ui.R
@@ -58,7 +68,8 @@ fun PokedexScreen(
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
-
+    val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
+    val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     CollectEvents(eventFlow = viewModel.eventFlow, snackbarHostState = snackbarHostState)
@@ -70,31 +81,77 @@ fun PokedexScreen(
             },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { paddingValues ->
-            PullToRefreshBox(
-                isRefreshing = isRefreshing,
-                onRefresh = viewModel::refreshList
+
+            Column(
+                modifier = Modifier
+                    .padding(paddingValues)
             ) {
-                Box(
+                OutlinedTextField(
+                    value = searchQuery,
+                    onValueChange = viewModel::onSearchQueryChanged,
                     modifier = Modifier
-                        .fillMaxSize()
-                        .padding(paddingValues)
-                ) {
-                    when (val state = uiState) {
-                        is PokedexUiState.Loading -> {
-                            LoadingIndicator(isInitialLoading = state.isInitialLoading)
+                        .fillMaxWidth()
+                        .padding(
+                            horizontal = dimensionResource(R.dimen.padding_medium),
+                            vertical = dimensionResource(R.dimen.padding_small)
+                        ),
+                    placeholder = { Text("Filtrar Pokémon por nome ou ID") },
+                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Filtrar") },
+                    trailingIcon = {
+                        if (searchQuery.isNotEmpty()) {
+                            IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
+                                Icon(Icons.Default.Clear, contentDescription = "Limpar")
+                            }
                         }
+                    },
+                    singleLine = true,
+                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
+                    keyboardActions = KeyboardActions(onDone = {
+                        keyboardController?.hide()
+                    })
+                )
 
-                        is PokedexUiState.Success -> PokemonGrid(
-                            pokemonList = state.pokemonList,
-                            canLoadMore = state.canLoadMore,
-                            onLoadMore = { viewModel.fetchPokemonList() },
-                            onPokemonClick = onPokemonClick
-                        )
+                PullToRefreshBox(
+                    modifier = Modifier
+                        .fillMaxWidth(),
+                    isRefreshing = isRefreshing,
+                    onRefresh = viewModel::refreshList
+                ) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                    ) {
+                        when (val state = uiState) {
+                            is PokedexUiState.Loading -> {
+                                LoadingIndicator(isInitialLoading = state.isInitialLoading)
+                            }
 
-                        is PokedexUiState.Error -> ErrorMessage(
-                            message = state.message,
-                            onRetry = { viewModel.fetchPokemonList(forceRefresh = true) }
-                        )
+                            is PokedexUiState.Success -> {
+                                if (state.pokemonList.isEmpty()) {
+                                    Box(
+                                        modifier = Modifier.fillMaxSize(),
+                                        contentAlignment = Alignment.Center
+                                    ) {
+                                        Text(
+                                            if (searchQuery.isBlank()) "Nenhum Pokémon encontrado." // Nenhum carregado
+                                            else "Nenhum Pokémon corresponde a \"$searchQuery\"" // Nenhum corresponde ao filtro
+                                        )
+                                    }
+                                } else {
+                                    PokemonGrid(
+                                        pokemonList = state.pokemonList,
+                                        canLoadMore = state.canLoadMore && searchQuery.isBlank(),
+                                        onLoadMore = { viewModel.fetchPokemonList() },
+                                        onPokemonClick = onPokemonClick,
+                                    )
+                                }
+                            }
+
+                            is PokedexUiState.Error -> ErrorMessage(
+                                message = state.message,
+                                onRetry = { viewModel.fetchPokemonList(forceRefresh = true) }
+                            )
+                        }
                     }
                 }
             }
