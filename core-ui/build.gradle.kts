@@ -45,7 +45,7 @@ android {
 }
 
 dependencies {
-// Kotlin Standard Library
+    // Kotlin Standard Library
     implementation(libs.kotlin.stdlib)
 
     // Dependências Principais do Jetpack Compose
@@ -55,6 +55,8 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.palette.ktx)
 
     // AndroidX Core (necessário para algumas funcionalidades do Compose)
     implementation(libs.androidx.core.ktx)

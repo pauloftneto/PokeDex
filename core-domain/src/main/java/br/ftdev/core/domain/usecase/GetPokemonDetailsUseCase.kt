@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.flow
 class GetPokemonDetailsUseCase(
     private val pokemonRepository: PokemonRepository
 ) {
-    suspend operator fun invoke(nameOrId: String): Flow<Result<PokemonDetails>> = flow {
+    operator fun invoke(nameOrId: String): Flow<Result<PokemonDetails>> = flow {
         pokemonRepository.getPokemonDetails(nameOrId)
             .onSuccess { result ->
                 emit(Result.success(result))
