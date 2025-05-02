@@ -5,9 +5,11 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.runtime.Composable
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
 import br.ftdev.core.ui.theme.PokemonAppTheme
 import br.ftdev.feature.pokedex.presentation.screen.PokedexScreen
 import br.ftdev.pokedex.rotes.AppDestinations
@@ -27,12 +29,20 @@ class MainActivity : ComponentActivity() {
     fun AppNavigation() {
         val navController = rememberNavController()
 
-        NavHost(
-            navController = navController,
-            startDestination = AppDestinations.POKEDEX_ROUTE
-        ) {
-            composable(route = AppDestinations.POKEDEX_ROUTE) {
-                PokedexScreen()
+        NavHost(navController = navController, startDestination = AppDestinations.POKEDEX_ROUTE) {
+            composable(AppDestinations.POKEDEX_ROUTE) {
+                PokedexScreen(
+                    onPokemonClick = { pokemonId ->
+                        navController.navigate(AppDestinations.pokemonDetails(pokemonId))
+                    }
+                )
+            }
+
+            composable(
+                route = AppDestinations.POKEMON_DETAILS,
+                arguments = listOf(navArgument("pokemonId") { type = NavType.IntType })
+            ) {
+                PokemonDetailsScreen(navController = navController)
             }
         }
     }
