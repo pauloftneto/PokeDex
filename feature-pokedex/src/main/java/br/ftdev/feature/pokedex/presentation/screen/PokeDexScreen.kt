@@ -1,19 +1,23 @@
 package br.ftdev.feature.pokedex.presentation.screen
 
+
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
@@ -31,26 +35,35 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.ui.R
 import br.ftdev.core.ui.component.ErrorMessage
 import br.ftdev.core.ui.component.LoadingIndicator
 import br.ftdev.core.ui.theme.PokemonAppTheme
+import br.ftdev.core.ui.util.getVerticalGradient
+import br.ftdev.core.ui.util.loadBitmapFromUrl
 import br.ftdev.feature.pokedex.presentation.PokeDexViewModel
 import br.ftdev.feature.pokedex.presentation.event.PokeDexUiEvent
 import br.ftdev.feature.pokedex.presentation.state.PokedexUiState
@@ -76,26 +89,28 @@ fun PokedexScreen(
 
     PokemonAppTheme {
         Scaffold(
-            topBar = {
-                TopAppBar(title = { Text("Pokédex") })
-            },
             snackbarHost = { SnackbarHost(hostState = snackbarHostState) }
         ) { paddingValues ->
-
             Column(
                 modifier = Modifier
                     .padding(paddingValues)
+                    .padding(horizontal = dimensionResource(R.dimen.padding_medium))
             ) {
+                Image(
+                    painter = painterResource(id = R.drawable.pokemon_logo),
+                    contentDescription = "Pokémon Logo",
+                    modifier = Modifier
+                        .fillMaxWidth(0.6f)
+                        .align(Alignment.CenterHorizontally)
+                        .padding(vertical = dimensionResource(R.dimen.padding_large))
+                )
                 OutlinedTextField(
                     value = searchQuery,
                     onValueChange = viewModel::onSearchQueryChanged,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(
-                            horizontal = dimensionResource(R.dimen.padding_medium),
-                            vertical = dimensionResource(R.dimen.padding_small)
-                        ),
-                    placeholder = { Text("Filtrar Pokémon por nome ou ID") },
+                        .padding(bottom = dimensionResource(R.dimen.padding_medium)),
+                    placeholder = { Text("Buscar Pokémon") },
                     leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Filtrar") },
                     trailingIcon = {
                         if (searchQuery.isNotEmpty()) {
@@ -133,8 +148,8 @@ fun PokedexScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            if (searchQuery.isBlank()) "Nenhum Pokémon encontrado." // Nenhum carregado
-                                            else "Nenhum Pokémon corresponde a \"$searchQuery\"" // Nenhum corresponde ao filtro
+                                            if (searchQuery.isBlank()) "Nenhum Pokémon encontrado."
+                                            else "Nenhum Pokémon corresponde a \"$searchQuery\""
                                         )
                                     }
                                 } else {
@@ -211,38 +226,76 @@ fun PokemonGrid(
     }
 }
 
-
 @Composable
 fun PokemonCard(
     pokemon: Pokemon,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
+
+    val image = ImageRequest.Builder(LocalContext.current)
+        .data(pokemon.imageUrl)
+        .crossfade(true)
+        .build()
+
+    val context = LocalContext.current
+    var cardBackgroundColor by remember { mutableStateOf(Color.LightGray) }
+
+    LaunchedEffect(pokemon.imageUrl) {
+        val extractedColor = pokemon.imageUrl.loadBitmapFromUrl(context)
+        cardBackgroundColor = extractedColor
+    }
+
+    val gradientBrush = getVerticalGradient(
+        listOf(
+            cardBackgroundColor.copy(alpha = 0.2f),
+            cardBackgroundColor.copy(alpha = 0.8f),
+            cardBackgroundColor
+        )
+    )
+
     Card(
-        modifier = modifier,
+        modifier = modifier
+            .aspectRatio(1f)
+            .size(dimensionResource(R.dimen.card_size))
+            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.card_corner_radius_large))),
         onClick = onClick,
-        elevation = CardDefaults.cardElevation(defaultElevation = dimensionResource(R.dimen.padding_small))
+        colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
-        Column(
+        Box(
             modifier = Modifier
-                .fillMaxWidth()
-                .padding(dimensionResource(R.dimen.padding_medium)),
-            horizontalAlignment = Alignment.CenterHorizontally
+                .fillMaxSize()
+                .background(brush = gradientBrush)
+                .padding(dimensionResource(id = R.dimen.padding_small))
         ) {
             AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(pokemon.imageUrl)
-                    .crossfade(true)
-                    .build(),
+                model = image,
                 contentDescription = pokemon.name,
-                modifier = Modifier.size(dimensionResource(R.dimen.image_size))
+                modifier = Modifier
+                    .fillMaxWidth(0.8f)
+                    .aspectRatio(1f)
+                    .align(Alignment.Center)
+                    .offset(y = (-10).dp)
             )
-            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
-            Text(
-                text = "#${pokemon.id} ${pokemon.name}",
-                style = MaterialTheme.typography.bodyMedium,
-                maxLines = 1
-            )
+
+            Surface(
+                modifier = Modifier
+                    .align(Alignment.BottomCenter)
+                    .padding(bottom = dimensionResource(id = R.dimen.padding_medium)),
+                color = Color.Black.copy(alpha = 0.6f),
+                shape = RoundedCornerShape(dimensionResource(id = R.dimen.chip_corner_radius))
+            ) {
+                Text(
+                    text = "#${pokemon.id.toString().padStart(3, '0')} ${pokemon.name}",
+                    color = Color.White,
+                    style = MaterialTheme.typography.labelSmall,
+                    fontWeight = FontWeight.Bold,
+                    modifier = Modifier.padding(
+                        horizontal = dimensionResource(id = R.dimen.padding_medium),
+                        vertical = dimensionResource(id = R.dimen.padding_extra_small)
+                    )
+                )
+            }
         }
     }
 }

@@ -11,6 +11,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import br.ftdev.core.ui.theme.PokemonAppTheme
+import br.ftdev.feature.pokedex.details.presentation.screen.PokemonDetailsScreen
 import br.ftdev.feature.pokedex.presentation.screen.PokedexScreen
 import br.ftdev.pokedex.rotes.AppDestinations
 
