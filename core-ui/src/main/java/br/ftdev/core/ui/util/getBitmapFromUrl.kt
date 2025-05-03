@@ -65,6 +65,6 @@ fun getVerticalGradient(colors: List<Color>) =
     Brush.verticalGradient(
         colors = colors,
         startY = 0f,
-        endY = 500f
+        endY = 800f
     )
 
