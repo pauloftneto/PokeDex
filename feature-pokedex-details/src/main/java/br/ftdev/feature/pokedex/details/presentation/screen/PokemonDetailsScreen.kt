@@ -174,7 +174,7 @@ fun PokemonDetailsContent(
                     IconButton(
                         onClick = onBackClick,
                         modifier = Modifier.size(40.dp)
-                    ) { // Tamanho fixo para área de toque
+                    ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                             contentDescription = "Voltar",
@@ -187,9 +187,9 @@ fun PokemonDetailsContent(
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
                     )
-                } // Fim Row Voltar/ID
+                }
 
-                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_small))) // Espaço antes do nome
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_small)))
                 Text(
                     text = pokemon.name,
                     style = MaterialTheme.typography.headlineLarge,
