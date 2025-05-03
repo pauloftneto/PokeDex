@@ -42,4 +42,12 @@ dependencies {
     // Koin Core features
     implementation(libs.koin.core)
     implementation(libs.koin.android)
+
+    // Testes Unitários
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.truth)
+
 }

@@ -1,5 +1,9 @@
 package br.ftdev.core.data.mapper
 
+import br.ftdev.core.data.local.converters.PokemonTypeConverters.fromPokemonStatList
+import br.ftdev.core.data.local.converters.PokemonTypeConverters.fromPokemonTypeList
+import br.ftdev.core.data.local.converters.PokemonTypeConverters.toPokemonStatList
+import br.ftdev.core.data.local.converters.PokemonTypeConverters.toPokemonTypeList
 import br.ftdev.core.data.local.entity.PokemonDetailsEntity
 import br.ftdev.core.data.local.entity.PokemonEntity
 import br.ftdev.core.data.remote.response.PokemonDetailsResponse
@@ -8,13 +12,9 @@ import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.domain.model.PokemonDetails
 import br.ftdev.core.domain.model.PokemonStat
 import br.ftdev.core.domain.model.PokemonType
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
 
 private const val POKEMON_IMAGE_URL = "https://raw.githubusercontent.com/PokeAPI/" +
         "sprites/master/sprites/pokemon/other/official-artwork/"
-
-private val jsonParser = Json { ignoreUnknownKeys = true }
 
 internal fun extractIdFromUrl(url: String): Int? {
     return url.trimEnd('/').substringAfterLast('/').toIntOrNull()
@@ -44,26 +44,25 @@ internal fun List<PokemonEntity>.toDomain(): List<Pokemon> {
     return this.map { it.toDomain() }
 }
 
-internal fun PokemonDetailsEntity.toDomain(): PokemonDetails? {
-    return jsonParser.runCatching {
-        val domainTypes = decodeFromString<List<PokemonType>>(typesJson)
-        val domainStats = decodeFromString<List<PokemonStat>>(statsJson)
+internal fun PokemonDetailsEntity.toDomain(): PokemonDetails {
+    val domainTypes = toPokemonTypeList(typesJson)
+    val domainStats = toPokemonStatList(statsJson)
 
-        PokemonDetails(
-            id = id,
-            name = name.replaceFirstChar { it.titlecase() },
-            imageUrl = imageUrl,
-            height = height,
-            weight = weight,
-            types = domainTypes,
-            stats = domainStats
-        )
-    }.getOrNull()
+    return PokemonDetails(
+        id = id,
+        name = name.replaceFirstChar { it.titlecase() },
+        imageUrl = imageUrl,
+        height = height,
+        weight = weight,
+        types = domainTypes.orEmpty(),
+        stats = domainStats.orEmpty()
+    )
 }
 
 
 internal fun PokemonDetailsResponse.toEntity(): PokemonDetailsEntity {
-    val domainTypes = types.map { PokemonType(it.type.name.replaceFirstChar { char -> char.titlecase() }) }
+    val domainTypes =
+        types.map { PokemonType(it.type.name.replaceFirstChar { char -> char.titlecase() }) }
     val domainStats = stats.map {
         PokemonStat(
             name = it.stat.name.replace('-', ' ')
@@ -79,13 +78,14 @@ internal fun PokemonDetailsResponse.toEntity(): PokemonDetailsEntity {
         imageUrl = sprites.other?.officialArtwork?.frontDefault ?: sprites.frontDefault,
         height = height / 10.0f,
         weight = weight / 10.0f,
-        typesJson = jsonParser.encodeToString(domainTypes),
-        statsJson = jsonParser.encodeToString(domainStats)
+        typesJson = fromPokemonTypeList(domainTypes),
+        statsJson = fromPokemonStatList(domainStats)
     )
 }
 
 internal fun PokemonDetailsResponse.toDomain(): PokemonDetails {
-    val domainTypes = types.map { PokemonType(it.type.name.replaceFirstChar { char -> char.titlecase() }) }
+    val domainTypes =
+        types.map { PokemonType(it.type.name.replaceFirstChar { char -> char.titlecase() }) }
     val domainStats = stats.map {
         PokemonStat(
             name = it.stat.name.replace('-', ' ')
