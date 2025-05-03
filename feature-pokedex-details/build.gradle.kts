@@ -68,5 +68,10 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.androidx.activity.compose)
 
+    // Testes Unitários
     testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+
 }
