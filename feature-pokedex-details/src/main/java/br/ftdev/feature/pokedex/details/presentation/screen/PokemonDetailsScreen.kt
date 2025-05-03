@@ -20,24 +20,31 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.toArgb
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.core.graphics.ColorUtils
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavController
 import br.ftdev.core.domain.model.PokemonDetails
@@ -55,7 +62,6 @@ import coil.request.ImageRequest
 import org.koin.androidx.compose.koinViewModel
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun PokemonDetailsScreen(
     viewModel: PokemonDetailsViewModel = koinViewModel(),
@@ -64,25 +70,7 @@ fun PokemonDetailsScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
 
     PokemonAppTheme {
-        Scaffold(
-            topBar = {
-                TopAppBar(
-                    title = {
-                        val titleText =
-                            (uiState as? PokemonDetailsUiState.Success)?.pokemon?.name ?: "Detalhes"
-                        Text(titleText)
-                    },
-                    navigationIcon = {
-                        IconButton(onClick = { navController.navigateUp() }) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = "Voltar"
-                            )
-                        }
-                    }
-                )
-            }
-        ) { paddingValues ->
+        Scaffold { paddingValues ->
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -95,7 +83,10 @@ fun PokemonDetailsScreen(
                     }
 
                     is PokemonDetailsUiState.Success -> {
-                        PokemonDetailsContent(pokemon = state.pokemon)
+                        PokemonDetailsContent(
+                            pokemon = state.pokemon,
+                            onBackClick = { navController.navigateUp() }
+                        )
                     }
 
                     is PokemonDetailsUiState.Error -> {
@@ -111,7 +102,11 @@ fun PokemonDetailsScreen(
 }
 
 @Composable
-fun PokemonDetailsContent(pokemon: PokemonDetails, modifier: Modifier = Modifier) {
+fun PokemonDetailsContent(
+    pokemon: PokemonDetails,
+    onBackClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
     val firstColor = pokemon.types.first().name
     val secondColor = pokemon.types.lastOrNull()?.name ?: pokemon.types.first().name
 
@@ -123,55 +118,129 @@ fun PokemonDetailsContent(pokemon: PokemonDetails, modifier: Modifier = Modifier
         )
     )
 
+    val view = LocalView.current
+    val statusBarColor = remember(firstColor) {
+        PokemonTypeColor.getTypeColor(firstColor).copy(alpha = 0.2f)
+    }
+    val isColorDark = remember(statusBarColor) {
+        ColorUtils.calculateLuminance(statusBarColor.toArgb()) < 0.5
+    }
+
+    DisposableEffect(view, statusBarColor, isColorDark) {
+        val window = (view.context as? android.app.Activity)?.window
+        if (window != null) {
+            val originalStatusBarColor = window.statusBarColor
+            val insetsController = WindowInsetsControllerCompat(window, view)
+            val originalAppearance = insetsController.isAppearanceLightStatusBars
+
+            window.statusBarColor = statusBarColor.toArgb()
+            insetsController.isAppearanceLightStatusBars = !isColorDark
+
+            onDispose {
+                if (window.statusBarColor == statusBarColor.toArgb()) {
+                    window.statusBarColor = originalStatusBarColor
+                }
+                if (insetsController.isAppearanceLightStatusBars == !isColorDark) {
+                    insetsController.isAppearanceLightStatusBars = originalAppearance
+                }
+            }
+        } else {
+            onDispose { }
+        }
+    }
+
     Column(
         modifier = modifier
             .fillMaxSize()
-            .padding(dimensionResource(R.dimen.padding_large))
-            .verticalScroll(rememberScrollState()),
-        horizontalAlignment = Alignment.CenterHorizontally
+            .verticalScroll(rememberScrollState())
+            .background(MaterialTheme.colorScheme.background)
     ) {
         Box(
             modifier = Modifier
                 .fillMaxWidth()
+                .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
                 .background(gradientBrush)
-                .padding(bottom = dimensionResource(R.dimen.padding_xXXlarge))
+                .padding(dimensionResource(R.dimen.padding_medium)),
+            contentAlignment = Alignment.Center
         ) {
-            AsyncImage(
-                model = ImageRequest.Builder(LocalContext.current)
-                    .data(pokemon.imageUrl)
-                    .crossfade(true)
-                    .build(),
-                contentDescription = pokemon.name,
-                modifier = Modifier
-                    .size(dimensionResource(R.dimen.image_size_large))
-                    .padding(bottom = dimensionResource(R.dimen.padding_medium))
-            )
+            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(vertical = dimensionResource(R.dimen.padding_small)),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    IconButton(
+                        onClick = onBackClick,
+                        modifier = Modifier.size(40.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = "Voltar",
+                            tint = Color.White
+                        )
+                    }
+                    Text(
+                        text = "#${pokemon.id.toString().padStart(3, '0')}",
+                        color = Color.White,
+                        fontSize = 18.sp,
+                        fontWeight = FontWeight.Bold
+                    )
+                }
 
-            Text(
-                text = "#${pokemon.id.toString().padStart(3, '0')} ${pokemon.name}",
-                style = MaterialTheme.typography.headlineSmall,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Center
-            )
-
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_small)))
+                Text(
+                    text = pokemon.name,
+                    style = MaterialTheme.typography.headlineLarge,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Center,
+                    color = Color.White.copy(alpha = 0.9f)
+                )
+                Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_small)))
+                AsyncImage(
+                    model = ImageRequest.Builder(LocalContext.current)
+                        .data(pokemon.imageUrl)
+                        .crossfade(true)
+                        .build(),
+                    contentDescription = pokemon.name,
+                    contentScale = ContentScale.Fit,
+                    modifier = Modifier
+                        .size(dimensionResource(R.dimen.image_size_large))
+                )
+            }
+        }
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(dimensionResource(R.dimen.padding_large)),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_medium)))
             PokemonTypesSection(types = pokemon.types)
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_large)))
             PokemonMeasurements(height = pokemon.height, weight = pokemon.weight)
             Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_large)))
             PokemonStatsSection(stats = pokemon.stats)
+            Spacer(modifier = Modifier.height(dimensionResource(R.dimen.padding_large)))
         }
+
     }
 }
 
 @Composable
 fun DetailItem(label: String, value: String) {
     Column(horizontalAlignment = Alignment.CenterHorizontally) {
-        Text(text = label, style = MaterialTheme.typography.labelMedium, color = Color.Gray)
+        Text(
+            text = label,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
         Text(
             text = value,
             style = MaterialTheme.typography.bodyLarge,
-            fontWeight = FontWeight.Medium
+            fontWeight = FontWeight.Medium,
+            color = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -180,7 +249,11 @@ fun DetailItem(label: String, value: String) {
 fun PokemonTypesSection(types: List<PokemonType>, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier,
-        horizontalArrangement = Arrangement.spacedBy(dimensionResource(R.dimen.padding_medium))
+        horizontalArrangement = Arrangement.spacedBy(
+            dimensionResource(R.dimen.padding_medium),
+            Alignment.CenterHorizontally
+        ),
+        verticalAlignment = Alignment.CenterVertically
     ) {
         types.forEach { type ->
             TypeChip(typeName = type.name)
@@ -216,7 +289,7 @@ fun TypeChip(typeName: String, modifier: Modifier = Modifier) {
 fun PokemonMeasurements(height: Float, weight: Float, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceEvenly
+        horizontalArrangement = Arrangement.SpaceAround
     ) {
         DetailItem(label = "Altura", value = "$height m")
         DetailItem(label = "Peso", value = "$weight kg")
@@ -235,7 +308,7 @@ fun PokemonStatsSection(stats: List<PokemonStat>, modifier: Modifier = Modifier)
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium))
         )
-        val maxStatValue = 200
+        val maxStatValue = 255
 
         Column(
             modifier = Modifier.fillMaxWidth(),
