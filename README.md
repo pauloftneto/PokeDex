@@ -28,6 +28,7 @@ O código está organizado em módulos seguindo princípios da Clean Architectur
 
 ```
 app/                # Módulo Android principal (UI em Compose)
+core-analytics/     # Módulo de Analytics de produto e engenharia
 core-domain/        # Modelos de domínio e casos de uso (UseCases)
 core-data/          # Implementação de repositório, fontes remota (API) e local (Room)
 core-ui/            # Componentes de UI genéricos em Compose
@@ -46,8 +47,17 @@ feature-pokedex-details/ # Feature de detalhes de Pokémon
 * **Persistência**: Room
 * **Concorrência**: Coroutines + Flow
 * **Testes**: JUnit, MockK, Turbine (Fluxos)
+* **Timber**: Logging erros
+* **FakeAnalytics**: Módulo de analytics simulado
 
 ---
+
+### 📷 Screenshots
+
+![image](https://github.com/user-attachments/assets/afb7a29f-307c-4c87-a552-0a040ab2628b)
+![image](https://github.com/user-attachments/assets/b72c5e39-30b3-49f0-b981-7aca456adfc2)
+![image](https://github.com/user-attachments/assets/27750cbb-6195-4aa2-b670-3913986874b5)
+
 
 ### 📥 Instalação
 
@@ -76,9 +86,12 @@ git clone [https://github.com/pauloftneto/PokeDex.git](https://github.com/paulof
 
 ## 🔄 Funcionalidades Futuras
 
-* Adicionar **paginação** com Paging 3.
-* Testes de UI com Compose Testing.
-* CI/CD (GitHub Actions) para lint, testes e build automatizado.
+* Integração com logs e métricas reais (Firebase Crashlytics);
+* Analytics de usuários (Firebase Analytics);
+* Adicionar **paginação** com Paging 3;
+* Testes de UI com Compose Testing;
+* Melhoria de performance e cache de imagens;
+* CI/CD (GitHub Actions) para lint, testes e build automatizado;
 * Offline-first avançado e sincronização de cache.
 
 ---
