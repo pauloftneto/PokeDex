@@ -1,7 +1,6 @@
 package br.ftdev.feature.pokedex.presentation.screen
 
 
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -10,29 +9,20 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyGridState
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
-import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Clear
-import androidx.compose.material.icons.filled.Search
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
@@ -42,35 +32,40 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.produceState
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.ImeAction
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.ui.R
-import br.ftdev.core.ui.component.ErrorMessage
 import br.ftdev.core.ui.component.LoadingIndicator
+import br.ftdev.core.ui.component.PokemonLogo
+import br.ftdev.core.ui.component.SearchBar
+import br.ftdev.core.ui.component.ToAsyncImage
+import br.ftdev.core.ui.component.error.ErrorMessage
+import br.ftdev.core.ui.component.eventSnackbarHost
+import br.ftdev.core.ui.component.shimmerPlaceholder
+import br.ftdev.core.ui.component.toImageRequest
+import br.ftdev.core.ui.component.toPaddedId
 import br.ftdev.core.ui.theme.PokemonAppTheme
 import br.ftdev.core.ui.util.getVerticalGradient
 import br.ftdev.core.ui.util.loadBitmapFromUrl
 import br.ftdev.feature.pokedex.presentation.PokeDexViewModel
 import br.ftdev.feature.pokedex.presentation.event.PokeDexUiEvent
 import br.ftdev.feature.pokedex.presentation.state.PokedexUiState
-import coil.compose.AsyncImage
-import coil.request.ImageRequest
 import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.filterNotNull
 import org.koin.androidx.compose.koinViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -82,7 +77,6 @@ fun PokedexScreen(
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     val isRefreshing by viewModel.isRefreshing.collectAsStateWithLifecycle()
     val searchQuery by viewModel.searchQuery.collectAsStateWithLifecycle()
-    val keyboardController = LocalSoftwareKeyboardController.current
     val snackbarHostState = remember { SnackbarHostState() }
 
     CollectEvents(eventFlow = viewModel.eventFlow, snackbarHostState = snackbarHostState)
@@ -96,34 +90,15 @@ fun PokedexScreen(
                     .padding(paddingValues)
                     .padding(horizontal = dimensionResource(R.dimen.padding_medium))
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.pokemon_logo),
-                    contentDescription = "Pokémon Logo",
-                    modifier = Modifier
+                PokemonLogo(
+                    Modifier
                         .fillMaxWidth(0.6f)
                         .align(Alignment.CenterHorizontally)
                         .padding(vertical = dimensionResource(R.dimen.padding_large))
                 )
-                OutlinedTextField(
-                    value = searchQuery,
-                    onValueChange = viewModel::onSearchQueryChanged,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(bottom = dimensionResource(R.dimen.padding_medium)),
-                    placeholder = { Text("Buscar Pokémon") },
-                    leadingIcon = { Icon(Icons.Default.Search, contentDescription = "Filtrar") },
-                    trailingIcon = {
-                        if (searchQuery.isNotEmpty()) {
-                            IconButton(onClick = { viewModel.onSearchQueryChanged("") }) {
-                                Icon(Icons.Default.Clear, contentDescription = "Limpar")
-                            }
-                        }
-                    },
-                    singleLine = true,
-                    keyboardOptions = KeyboardOptions(imeAction = ImeAction.Done),
-                    keyboardActions = KeyboardActions(onDone = {
-                        keyboardController?.hide()
-                    })
+                searchQuery.SearchBar(
+                    placeholder = "Buscar Pokémon",
+                    onSearchQueryChanged = viewModel::onSearchQueryChanged
                 )
 
                 PullToRefreshBox(
@@ -162,9 +137,9 @@ fun PokedexScreen(
                                 }
                             }
 
-                            is PokedexUiState.Error -> ErrorMessage(
-                                message = state.message,
-                                onRetry = { viewModel.fetchPokemonList(forceRefresh = true) }
+                            is PokedexUiState.Error -> state.message.ErrorMessage(
+                                onRetry = { viewModel.fetchPokemonList(forceRefresh = true) },
+                                modifier = Modifier.fillMaxSize()
                             )
                         }
                     }
@@ -201,17 +176,7 @@ fun PokemonGrid(
 
         if (canLoadMore) {
             item {
-                LaunchedEffect(listState) {
-                    snapshotFlow { listState.layoutInfo.visibleItemsInfo }
-                        .collect { visibleItems ->
-                            val lastVisibleItemIndex = visibleItems.lastOrNull()?.index ?: -1
-                            val totalItems = listState.layoutInfo.totalItemsCount
-
-                            if (lastVisibleItemIndex >= totalItems - 5 && totalItems > 0) {
-                                onLoadMore()
-                            }
-                        }
-                }
+                listState.onEndReached(onLoadMore = onLoadMore)
 
                 Box(
                     modifier = Modifier
@@ -227,38 +192,38 @@ fun PokemonGrid(
 }
 
 @Composable
+fun LazyGridState.onEndReached(
+    onLoadMore: () -> Unit,
+    loadMoreThreshold: Int = 5,
+    enabled: Boolean = true
+) {
+    LaunchedEffect(this, enabled) {
+        if (!enabled) return@LaunchedEffect
+        snapshotFlow { layoutInfo.visibleItemsInfo.lastOrNull()?.index }
+            .filterNotNull()
+            .filter { last -> last >= layoutInfo.totalItemsCount - loadMoreThreshold }
+            .distinctUntilChanged()
+            .collect { onLoadMore() }
+    }
+}
+
+@Composable
 fun PokemonCard(
     pokemon: Pokemon,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
 ) {
 
-    val image = ImageRequest.Builder(LocalContext.current)
-        .data(pokemon.imageUrl)
-        .crossfade(true)
-        .build()
-
-    val context = LocalContext.current
-    var cardBackgroundColor by remember { mutableStateOf(Color.LightGray) }
-
-    LaunchedEffect(pokemon.imageUrl) {
-        val extractedColor = pokemon.imageUrl.loadBitmapFromUrl(context)
-        cardBackgroundColor = extractedColor
-    }
-
-    val gradientBrush = getVerticalGradient(
-        listOf(
-            cardBackgroundColor.copy(alpha = 0.2f),
-            cardBackgroundColor.copy(alpha = 0.8f),
-            cardBackgroundColor
-        )
-    )
+    val image = pokemon.imageUrl?.toImageRequest(LocalContext.current)
+    val gradientBrush = pokemon.imageUrl.gradientBrush()
+    val imageState = remember { mutableStateOf(true) }
 
     Card(
         modifier = modifier
             .aspectRatio(1f)
             .size(dimensionResource(R.dimen.card_size))
-            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.card_corner_radius_large))),
+            .clip(RoundedCornerShape(dimensionResource(id = R.dimen.card_corner_radius_large)))
+            .shimmerPlaceholder(imageState.value),
         onClick = onClick,
         colors = CardDefaults.cardColors(containerColor = Color.Transparent)
     ) {
@@ -268,15 +233,15 @@ fun PokemonCard(
                 .background(brush = gradientBrush)
                 .padding(dimensionResource(id = R.dimen.padding_small))
         ) {
-            AsyncImage(
-                model = image,
+            image?.ToAsyncImage(
                 contentDescription = pokemon.name,
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
                     .aspectRatio(1f)
                     .align(Alignment.Center)
-                    .offset(y = (-10).dp)
-            )
+            ) {
+                imageState.value = it
+            }
 
             Surface(
                 modifier = Modifier
@@ -286,7 +251,7 @@ fun PokemonCard(
                 shape = RoundedCornerShape(dimensionResource(id = R.dimen.chip_corner_radius))
             ) {
                 Text(
-                    text = "#${pokemon.id.toString().padStart(3, '0')} ${pokemon.name}",
+                    text = "#${pokemon.id.toPaddedId()} ${pokemon.name}",
                     color = Color.White,
                     style = MaterialTheme.typography.labelSmall,
                     fontWeight = FontWeight.Bold,
@@ -301,6 +266,23 @@ fun PokemonCard(
 }
 
 @Composable
+fun String?.gradientBrush(
+    defaultColor: Color = Color.LightGray
+): Brush {
+    val context = LocalContext.current
+    val dominantColor by produceState(defaultColor, this@gradientBrush) {
+        value = this@gradientBrush.loadBitmapFromUrl(context)
+    }
+    return getVerticalGradient(
+        listOf(
+            dominantColor.copy(alpha = 0.2f),
+            dominantColor.copy(alpha = 0.8f),
+            dominantColor
+        )
+    )
+}
+
+@Composable
 fun CollectEvents(
     eventFlow: SharedFlow<PokeDexUiEvent>,
     snackbarHostState: SnackbarHostState
@@ -309,9 +291,8 @@ fun CollectEvents(
         eventFlow.collectLatest { event ->
             when (event) {
                 is PokeDexUiEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(
-                        message = event.message,
-                        duration = SnackbarDuration.Short
+                    snackbarHostState.eventSnackbarHost(
+                        event.message
                     )
                 }
             }
