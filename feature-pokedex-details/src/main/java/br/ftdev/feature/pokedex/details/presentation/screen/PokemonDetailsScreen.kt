@@ -35,9 +35,9 @@ import androidx.compose.ui.graphics.toArgb
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalView
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.core.graphics.ColorUtils
 import androidx.core.view.WindowInsetsControllerCompat
@@ -53,6 +53,7 @@ import br.ftdev.core.ui.component.ToAsyncImage
 import br.ftdev.core.ui.component.TypeChip
 import br.ftdev.core.ui.component.error.ErrorMessage
 import br.ftdev.core.ui.component.toImageRequest
+import br.ftdev.core.ui.component.toPaddedId
 import br.ftdev.core.ui.theme.PokemonAppTheme
 import br.ftdev.core.ui.theme.PokemonTypeColor
 import br.ftdev.core.ui.util.getVerticalGradient
@@ -148,7 +149,12 @@ fun PokemonDetailsContent(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .clip(RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp))
+                .clip(
+                    RoundedCornerShape(
+                        bottomStart = dimensionResource(R.dimen.shape_corner_radius),
+                        bottomEnd = dimensionResource(R.dimen.shape_corner_radius)
+                    )
+                )
                 .background(gradientBrush)
                 .padding(dimensionResource(R.dimen.padding_medium)),
             contentAlignment = Alignment.Center
@@ -163,16 +169,16 @@ fun PokemonDetailsContent(
                 ) {
                     IconButton(
                         onClick = onBackClick,
-                        modifier = Modifier.size(40.dp)
+                        modifier = Modifier.size(dimensionResource(R.dimen.icon_button_size))
                     ) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = "Voltar",
+                            contentDescription = stringResource(R.string.back),
                             tint = Color.White
                         )
                     }
                     Text(
-                        text = "#${pokemon.id.toString().padStart(3, '0')}",
+                        text = "#${pokemon.id.toPaddedId()}",
                         color = Color.White,
                         fontSize = 18.sp,
                         fontWeight = FontWeight.Bold
@@ -237,7 +243,7 @@ fun PokemonStatsSection(stats: List<PokemonStat>, modifier: Modifier = Modifier)
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(
-            text = "Base Stats",
+            text = stringResource(R.string.base_stats),
             style = MaterialTheme.typography.titleMedium,
             fontWeight = FontWeight.Bold,
             modifier = Modifier.padding(bottom = dimensionResource(R.dimen.padding_medium))
