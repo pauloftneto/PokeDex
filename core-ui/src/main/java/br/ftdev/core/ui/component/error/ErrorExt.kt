@@ -28,7 +28,7 @@ import java.io.IOException
 private const val DEFAULT_ERROR_MESSAGE = "Erro desconhecido ao buscar Pokémon"
 private const val REFRESH_ERROR_MESSAGE = "Um erro inesperado ocorreu durante a atualização."
 private const val NETWORK_ERROR_MESSAGE = "Sem conexão. Verifique sua internet."
-private const val SERVER_ERROR_MESSAGE = "Sem conexão. Verifique sua internet."
+private const val SERVER_ERROR_MESSAGE = "Falha no servidor"
 
 @Composable
 fun String.ErrorMessage(
@@ -62,10 +62,6 @@ fun String.ErrorMessage(
         }
     }
 }
-
-
-
-
 
 fun Throwable.getErrorMessage(isRefresh: Boolean = false): String {
     return when (this) {
