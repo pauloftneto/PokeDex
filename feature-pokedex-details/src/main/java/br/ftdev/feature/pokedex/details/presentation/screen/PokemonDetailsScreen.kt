@@ -100,7 +100,7 @@ fun PokemonDetailsScreen(
 }
 
 @Composable
-fun PokemonDetailsContent(
+private fun PokemonDetailsContent(
     pokemon: PokemonDetails,
     onBackClick: () -> Unit,
     modifier: Modifier = Modifier
@@ -221,7 +221,7 @@ fun PokemonDetailsContent(
 }
 
 @Composable
-fun PokemonTypesSection(types: List<PokemonType>, modifier: Modifier = Modifier) {
+private fun PokemonTypesSection(types: List<PokemonType>, modifier: Modifier = Modifier) {
     Row(
         modifier = modifier,
         horizontalArrangement = Arrangement.spacedBy(
@@ -237,7 +237,7 @@ fun PokemonTypesSection(types: List<PokemonType>, modifier: Modifier = Modifier)
 }
 
 @Composable
-fun PokemonStatsSection(stats: List<PokemonStat>, modifier: Modifier = Modifier) {
+private fun PokemonStatsSection(stats: List<PokemonStat>, modifier: Modifier = Modifier) {
     Column(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally
@@ -265,7 +265,7 @@ fun PokemonStatsSection(stats: List<PokemonStat>, modifier: Modifier = Modifier)
 }
 
 @Composable
-fun PokemonDetails.gradientBrush(
+private fun PokemonDetails.gradientBrush(
     firstColor: String
 ): Brush {
 

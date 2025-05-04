@@ -1,6 +1,5 @@
 package br.ftdev.feature.pokedex.presentation.screen
 
-
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -54,7 +53,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.res.vectorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.ui.R
@@ -179,9 +177,8 @@ fun PokedexScreen(
     }
 }
 
-
 @Composable
-fun PokemonGrid(
+private fun PokemonGrid(
     isGrid: Boolean,
     pokemonList: List<Pokemon>,
     canLoadMore: Boolean,
@@ -233,7 +230,7 @@ fun PokemonGrid(
 }
 
 @Composable
-fun LazyGridState.onEndReached(
+private fun LazyGridState.onEndReached(
     onLoadMore: () -> Unit,
     loadMoreThreshold: Int = 5,
     enabled: Boolean = true
@@ -249,7 +246,7 @@ fun LazyGridState.onEndReached(
 }
 
 @Composable
-fun PokemonCard(
+private fun PokemonCard(
     pokemon: Pokemon,
     modifier: Modifier = Modifier,
     onClick: () -> Unit
@@ -291,7 +288,7 @@ fun PokemonCard(
 }
 
 @Composable
-fun PokemonNameChip(
+private fun PokemonNameChip(
     pokemon: Pokemon,
     modifier: Modifier = Modifier
 ) {
@@ -315,7 +312,7 @@ fun PokemonNameChip(
 }
 
 @Composable
-fun PokemonList(
+private fun PokemonList(
     pokemon: Pokemon,
     onClick: () -> Unit,
 ) {
@@ -334,12 +331,12 @@ fun PokemonList(
         Box(
             modifier = Modifier
                 .background(bgGradient)
-                .padding(horizontal = 8.dp)
+                .padding(horizontal = dimensionResource(id = R.dimen.padding_small))
         ) {
             Row(
                 Modifier
                     .fillMaxSize()
-                    .padding(horizontal = 12.dp),
+                    .padding(horizontal = dimensionResource(id = R.dimen.padding_xSmall)),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
@@ -351,9 +348,8 @@ fun PokemonList(
     }
 }
 
-
 @Composable
-fun PokemonInfo(pokemon: Pokemon) {
+private fun PokemonInfo(pokemon: Pokemon) {
     Row(verticalAlignment = Alignment.CenterVertically) {
         Text(
             text = "#${pokemon.id.toPaddedId()}",
@@ -372,7 +368,7 @@ fun PokemonInfo(pokemon: Pokemon) {
 }
 
 @Composable
-fun PokemonImage(
+private fun PokemonImage(
     pokemon: Pokemon,
     imageState: MutableState<Boolean>
 ) {
@@ -380,10 +376,10 @@ fun PokemonImage(
     Box(
         modifier = Modifier
             .size(
-                width = 130.dp,
-                height = 90.dp
+                width = dimensionResource(id = R.dimen.min_size),
+                height = dimensionResource(id = R.dimen.min_height_size),
             )
-            .offset(x = 20.dp)
+            .offset(x = dimensionResource(id = R.dimen.padding_xMedium))
             .background(
                 Color.White.copy(alpha = 0.3f),
                 shape = RoundedCornerShape(
@@ -405,7 +401,7 @@ fun PokemonImage(
 
 
 @Composable
-fun String?.gradientBrush(
+private fun String?.gradientBrush(
     defaultColor: Color = Color.LightGray
 ): Brush {
     val context = LocalContext.current
@@ -423,7 +419,7 @@ fun String?.gradientBrush(
 }
 
 @Composable
-fun CollectEvents(
+private fun CollectEvents(
     eventFlow: SharedFlow<PokeDexUiEvent>,
     snackbarHostState: SnackbarHostState
 ) {
