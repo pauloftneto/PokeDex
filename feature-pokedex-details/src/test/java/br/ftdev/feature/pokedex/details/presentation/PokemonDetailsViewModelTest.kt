@@ -2,6 +2,7 @@ package br.ftdev.feature.pokedex.details.presentation
 
 import androidx.lifecycle.SavedStateHandle
 import app.cash.turbine.test
+import br.ftdev.core.analytics.AnalyticsTracker
 import br.ftdev.core.domain.model.PokemonDetails
 import br.ftdev.core.domain.model.PokemonStat
 import br.ftdev.core.domain.model.PokemonType
@@ -24,6 +25,7 @@ import org.junit.Test
 @OptIn(ExperimentalCoroutinesApi::class)
 class PokemonDetailsViewModelTest {
 
+    private val fakeTracker = mockk<AnalyticsTracker>(relaxed = true)
     private val getPokemonDetailsUseCase = mockk<GetPokemonDetailsUseCase>()
     private val testDispatcher = StandardTestDispatcher()
 
@@ -57,6 +59,7 @@ class PokemonDetailsViewModelTest {
 
         viewModel = PokemonDetailsViewModel(
             getPokemonDetailsUseCase,
+            fakeTracker,
             SavedStateHandle(mapOf("pokemonId" to 1))
         )
 
@@ -77,6 +80,7 @@ class PokemonDetailsViewModelTest {
 
         viewModel = PokemonDetailsViewModel(
             getPokemonDetailsUseCase,
+            fakeTracker,
             SavedStateHandle(mapOf("pokemonId" to 25))
         )
 
@@ -95,6 +99,7 @@ class PokemonDetailsViewModelTest {
 
         viewModel = PokemonDetailsViewModel(
             getPokemonDetailsUseCase,
+            fakeTracker,
             SavedStateHandle(mapOf("pokemonId" to 99))
         )
 

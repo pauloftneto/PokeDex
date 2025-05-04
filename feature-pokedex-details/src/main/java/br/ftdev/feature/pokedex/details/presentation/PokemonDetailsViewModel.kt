@@ -3,6 +3,7 @@ package br.ftdev.feature.pokedex.details.presentation
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.ftdev.core.analytics.AnalyticsTracker
 import br.ftdev.core.domain.usecase.GetPokemonDetailsUseCase
 import br.ftdev.core.ui.component.error.getErrorMessage
 import br.ftdev.feature.pokedex.details.presentation.state.PokemonDetailsUiState
@@ -13,6 +14,7 @@ import kotlinx.coroutines.launch
 
 class PokemonDetailsViewModel(
     private val getPokemonDetailsUseCase: GetPokemonDetailsUseCase,
+    private val analytics: AnalyticsTracker,
     savedStateHandle: SavedStateHandle
 ) : ViewModel() {
 
@@ -25,6 +27,8 @@ class PokemonDetailsViewModel(
     }
 
     init {
+        analytics.trackScreen("PokemonDetailsScreen")
+        analytics.trackEvent("fetch_pokemon_details", mapOf("pokemon_id" to pokemonId.toString()))
         fetchDetails()
     }
 
@@ -35,6 +39,7 @@ class PokemonDetailsViewModel(
                 .collect { result ->
                     result.onSuccess { pokemon ->
                         _uiState.value = PokemonDetailsUiState.Success(pokemon)
+                        analytics.trackEvent("pokemon_details_loaded", mapOf("pokemon_id" to pokemon.id.toString()))
                     }.onFailure { exception ->
                         handlePokemonFetchFailure(exception)
                     }
@@ -44,6 +49,13 @@ class PokemonDetailsViewModel(
 
     private fun handlePokemonFetchFailure(exception: Throwable) {
         val errorMsg = exception.getErrorMessage()
+        analytics.trackEvent(
+            "pokemon_details_error",
+            mapOf(
+                "pokemon_id" to pokemonId.toString(),
+                "error" to errorMsg
+            )
+        )
         _uiState.value = PokemonDetailsUiState.Error(errorMsg)
     }
 
