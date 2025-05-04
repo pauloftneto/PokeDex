@@ -8,9 +8,9 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.toArgb
 import androidx.core.graphics.drawable.toBitmap
 import androidx.palette.graphics.Palette
+import br.ftdev.core.ui.component.toImageRequest
 import coil.Coil
 import coil.ImageLoader
-import coil.request.ImageRequest
 import coil.request.SuccessResult
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -28,10 +28,7 @@ suspend fun String?.loadBitmapFromUrl(
         runCatching {
             val imageLoader: ImageLoader = Coil.imageLoader(context)
 
-            val request: ImageRequest = ImageRequest.Builder(context)
-                .data(this@loadBitmapFromUrl)
-                .allowHardware(false)
-                .build()
+            val request= this@loadBitmapFromUrl.toImageRequest(context)
 
             when (val result = imageLoader.execute(request)) {
                 is SuccessResult -> {

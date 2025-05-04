@@ -4,6 +4,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import br.ftdev.core.domain.usecase.GetPokemonDetailsUseCase
+import br.ftdev.core.ui.component.error.getErrorMessage
 import br.ftdev.feature.pokedex.details.presentation.state.PokemonDetailsUiState
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -35,11 +36,15 @@ class PokemonDetailsViewModel(
                     result.onSuccess { pokemon ->
                         _uiState.value = PokemonDetailsUiState.Success(pokemon)
                     }.onFailure { exception ->
-                        _uiState.value = PokemonDetailsUiState.Error(
-                            exception.message ?: "Erro ao carregar detalhes do Pokémon."
-                        )
+                        handlePokemonFetchFailure(exception)
                     }
                 }
         }
     }
+
+    private fun handlePokemonFetchFailure(exception: Throwable) {
+        val errorMsg = exception.getErrorMessage()
+        _uiState.value = PokemonDetailsUiState.Error(errorMsg)
+    }
+
 }

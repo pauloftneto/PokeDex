@@ -5,6 +5,7 @@ import androidx.lifecycle.viewModelScope
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.domain.usecase.GetPokemonListUseCase
 import br.ftdev.core.domain.usecase.RefreshPokemonListUseCase
+import br.ftdev.core.ui.component.error.getErrorMessage
 import br.ftdev.feature.pokedex.presentation.event.PokeDexUiEvent
 import br.ftdev.feature.pokedex.presentation.state.PokedexUiState
 import kotlinx.coroutines.Job
@@ -19,8 +20,6 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
 
 private const val PAGE_SIZE = 20
-private const val DEFAULT_ERROR_MESSAGE = "Erro desconhecido ao buscar Pokémon"
-private const val REFRESH_ERROR_MESSAGE = "Um erro inesperado ocorreu durante a atualização."
 
 class PokeDexViewModel(
     private val getPokemonListUseCase: GetPokemonListUseCase,
@@ -115,7 +114,7 @@ class PokeDexViewModel(
     }
 
     private suspend fun handlePokemonFetchFailure(exception: Throwable) {
-        val errorMsg = exception.message ?: DEFAULT_ERROR_MESSAGE
+        val errorMsg = exception.getErrorMessage()
 
         if (pokemonList.isEmpty()) {
             _uiState.value = PokedexUiState.Error(errorMsg)
@@ -127,7 +126,6 @@ class PokeDexViewModel(
                 canLoadMore = false
             )
         }
-        println("Erro ao carregar Pokémon: $exception")
     }
 
     private fun cancelFetchListJob() {
@@ -158,7 +156,7 @@ class PokeDexViewModel(
     }
 
     private suspend fun handleRefreshError(error: Throwable) {
-        val errorMsg = error.message ?: REFRESH_ERROR_MESSAGE
+        val errorMsg = error.getErrorMessage(isRefresh = true)
         _eventChannel.emit(PokeDexUiEvent.ShowSnackbar(errorMsg))
     }
 

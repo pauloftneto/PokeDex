@@ -102,7 +102,7 @@ class PokemonDetailsViewModelTest {
             assertEquals(PokemonDetailsUiState.Loading, awaitItem())
             testDispatcher.scheduler.advanceUntilIdle()
             assertEquals(
-                PokemonDetailsUiState.Error("Erro ao carregar detalhes do Pokémon."),
+                PokemonDetailsUiState.Error("Erro desconhecido ao buscar Pokémon"),
                 awaitItem()
             )
         }

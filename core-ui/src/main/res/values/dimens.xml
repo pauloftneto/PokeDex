@@ -1,26 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <dimen name="corner_radius_medium">8dp</dimen>
+    <dimen name="padding_extra_small">4dp</dimen>
     <dimen name="padding_small">8dp</dimen>
+    <dimen name="padding_xSmall">12dp</dimen>
     <dimen name="padding_medium">16dp</dimen>
     <dimen name="padding_large">24dp</dimen>
     <dimen name="padding_xLarge">32dp</dimen>
-    <dimen name="padding_xXXlarge">60dp</dimen>
-    <dimen name="min_size">120dp</dimen>
-    <dimen name="image_size">96dp</dimen>
-    <dimen name="elevation_medium">4dp</dimen>
-    <dimen name="padding_extra_small">4dp</dimen>
-    <dimen name="chip_corner_radius">16dp</dimen>
-    <dimen name="card_corner_radius_large">20dp</dimen>
-    <dimen name="progress_bar_corner_radius">4dp</dimen>
-    <dimen name="image_size_large">200dp</dimen>
-    <dimen name="card_size">180dp</dimen>
-    <dimen name="progress_bar_height">12dp</dimen>
-    <dimen name="progress_bar_rounded">10dp</dimen>
+    <dimen name="padding_xXXlarge">64dp</dimen>
     <dimen name="width_detail_name">100dp</dimen>
     <dimen name="width_detail_number">40dp</dimen>
-    <dimen name="padding_for_overlap">64dp</dimen>
-    <dimen name="card_overlap_amount">50dp</dimen>
-    <dimen name="width_stat_name">80dp</dimen>
-    <dimen name="width_stat_value">40dp</dimen>
+    <dimen name="progress_bar_height">12dp</dimen>
+    <dimen name="progress_bar_rounded">10dp</dimen>
+    <dimen name="card_size">180dp</dimen>
+    <dimen name="corner_radius_small">8dp</dimen>
+    <dimen name="corner_radius_medium">20dp</dimen>
+    <dimen name="corner_radius_xXXLarge">80dp</dimen>
+    <dimen name="shape_corner_radius">24dp</dimen>
+    <dimen name="icon_button_size">40dp</dimen>
+    <dimen name="min_size">120dp</dimen>
+    <dimen name="image_size_large">200dp</dimen>
+    <dimen name="chip_corner_radius">16dp</dimen>
 </resources>
