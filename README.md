@@ -54,10 +54,13 @@ feature-pokedex-details/ # Feature de detalhes de Pokémon
 
 ### 📷 Screenshots
 
-![image](https://github.com/user-attachments/assets/afb7a29f-307c-4c87-a552-0a040ab2628b)
-![image](https://github.com/user-attachments/assets/b72c5e39-30b3-49f0-b981-7aca456adfc2)
-![image](https://github.com/user-attachments/assets/27750cbb-6195-4aa2-b670-3913986874b5)
-
+<table>
+  <tr>
+    <td align="center"><img src="https://github.com/user-attachments/assets/3881a6e0-7487-4470-a719-e60e849b562d" width="50%"/></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/703d19d5-645b-4f28-983d-ad0e25f3de12" width="50%"/></td>
+    <td align="center"><img src="https://github.com/user-attachments/assets/a75073f9-95b5-41f2-8364-79d7f695f796" width="50%"/></td>
+  </tr>
+</table>
 
 ### 📥 Instalação
 
