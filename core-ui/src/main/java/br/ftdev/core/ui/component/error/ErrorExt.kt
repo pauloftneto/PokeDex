@@ -19,7 +19,6 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
-import androidx.compose.ui.unit.dp
 import br.ftdev.core.ui.R
 import br.ftdev.core.ui.theme.PokeYellow
 import coil.network.HttpException
@@ -45,10 +44,10 @@ fun String.ErrorMessage(
         Icon(
             imageVector = Icons.Default.Warning,
             tint = PokeYellow,
-            contentDescription = "Filtrar",
-            modifier = Modifier.size(64.dp)
+            contentDescription = stringResource(id = R.string.content_filter),
+            modifier = Modifier.size(dimensionResource(R.dimen.padding_xXXlarge))
         )
-        Spacer(Modifier.height(12.dp))
+        Spacer(Modifier.height(dimensionResource(R.dimen.padding_xSmall)))
         Text(
             text = this@ErrorMessage,
             style = MaterialTheme.typography.bodyLarge,
