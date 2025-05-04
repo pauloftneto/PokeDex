@@ -4,6 +4,7 @@
     <dimen name="padding_small">8dp</dimen>
     <dimen name="padding_xSmall">12dp</dimen>
     <dimen name="padding_medium">16dp</dimen>
+    <dimen name="padding_xMedium">20dp</dimen>
     <dimen name="padding_large">24dp</dimen>
     <dimen name="padding_xLarge">32dp</dimen>
     <dimen name="padding_xXXlarge">64dp</dimen>
@@ -17,7 +18,8 @@
     <dimen name="corner_radius_xXXLarge">80dp</dimen>
     <dimen name="shape_corner_radius">24dp</dimen>
     <dimen name="icon_button_size">40dp</dimen>
-    <dimen name="min_size">120dp</dimen>
+    <dimen name="min_size">130dp</dimen>
+    <dimen name="min_height_size">90dp</dimen>
     <dimen name="image_size_large">200dp</dimen>
     <dimen name="chip_corner_radius">16dp</dimen>
 </resources>

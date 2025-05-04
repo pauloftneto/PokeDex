@@ -28,14 +28,14 @@ suspend fun String?.loadBitmapFromUrl(
         runCatching {
             val imageLoader: ImageLoader = Coil.imageLoader(context)
 
-            val request= this@loadBitmapFromUrl.toImageRequest(context)
+            val request = this@loadBitmapFromUrl.toImageRequest(context)
 
             when (val result = imageLoader.execute(request)) {
                 is SuccessResult -> {
                     when (val drawable = result.drawable) {
                         is BitmapDrawable -> drawable.bitmap
                         else -> drawable.toBitmap()
-                    }.extractVibrantColor()
+                    }.extractMutedColor()
                 }
 
                 else -> {
@@ -48,12 +48,12 @@ suspend fun String?.loadBitmapFromUrl(
         }.getOrDefault(defaultColor)
     }
 
-fun Bitmap.extractVibrantColor(
+fun Bitmap.extractMutedColor(
     defaultColor: Color = Color.LightGray
 ) = runCatching {
-    val palette = Palette.from(this@extractVibrantColor).generate()
-    val vibrantColor = palette.getVibrantColor(palette.getDominantColor(defaultColor.toArgb()))
-    Color(vibrantColor)
+    val palette = Palette.from(this@extractMutedColor).generate()
+    val mutedColor = palette.getMutedColor(palette.getDominantColor(defaultColor.toArgb()))
+    Color(mutedColor)
 }.onFailure { exception ->
     println("Error generating Palette or extracting color: ${exception.message}")
 }.getOrDefault(defaultColor)
@@ -61,7 +61,12 @@ fun Bitmap.extractVibrantColor(
 fun getVerticalGradient(colors: List<Color>) =
     Brush.verticalGradient(
         colors = colors,
-        startY = 0f,
         endY = 800f
+    )
+
+fun getHorizontalGradient(colors: List<Color>) =
+    Brush.horizontalGradient(
+        colors = colors,
+        endX = 950f
     )
 
