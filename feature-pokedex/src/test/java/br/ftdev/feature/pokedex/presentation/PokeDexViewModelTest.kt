@@ -1,6 +1,7 @@
 package br.ftdev.feature.pokedex.presentation
 
 import app.cash.turbine.test
+import br.ftdev.core.analytics.AnalyticsTracker
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.domain.usecase.GetPokemonListUseCase
 import br.ftdev.core.domain.usecase.RefreshPokemonListUseCase
@@ -27,6 +28,7 @@ class PokeDexViewModelTest {
 
     private val getPokemonListUseCase = mockk<GetPokemonListUseCase>()
     private val refreshPokemonListUseCase = mockk<RefreshPokemonListUseCase>()
+    private val fakeTracker = mockk<AnalyticsTracker>(relaxed = true)
     private val testDispatcher = StandardTestDispatcher()
 
     private lateinit var viewModel: PokeDexViewModel
@@ -48,7 +50,7 @@ class PokeDexViewModelTest {
             emit(Result.success(list))
         }
 
-        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase)
+        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase, fakeTracker)
 
         viewModel.uiState.test {
             val loading = awaitItem()
@@ -69,7 +71,7 @@ class PokeDexViewModelTest {
             emit(Result.failure(Throwable("Falha na API")))
         }
 
-        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase)
+        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase, fakeTracker)
 
         viewModel.uiState.test {
             val loading = awaitItem()
@@ -89,7 +91,7 @@ class PokeDexViewModelTest {
             emit(Result.success(list))
         }
 
-        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase)
+        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase, fakeTracker)
 
         viewModel.refreshList()
 
@@ -110,7 +112,7 @@ class PokeDexViewModelTest {
         coEvery { refreshPokemonListUseCase() } returns flowOf(Result.failure(Throwable("Erro no refresh")))
         coEvery { getPokemonListUseCase(any(), any()) } returns flowOf(Result.success(emptyList()))
 
-        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase)
+        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase, fakeTracker)
 
         viewModel.eventFlow.test {
             viewModel.refreshList()
@@ -130,7 +132,8 @@ class PokeDexViewModelTest {
                 )
             )
 
-            viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase)
+            viewModel =
+                PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase, fakeTracker)
 
             viewModel.uiState.test {
                 awaitItem()
@@ -151,7 +154,7 @@ class PokeDexViewModelTest {
         )
         coEvery { refreshPokemonListUseCase() } returns flowOf(Result.success(Unit))
 
-        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase)
+        viewModel = PokeDexViewModel(getPokemonListUseCase, refreshPokemonListUseCase, fakeTracker)
 
         viewModel.uiState.test {
             awaitItem()

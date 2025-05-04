@@ -36,6 +36,7 @@ android {
 dependencies {
     implementation(project(":core-domain"))
     implementation(project(":core-ui"))
+    implementation(project(":core-analytics"))
 
     implementation(libs.coil.compose)
 

@@ -1,6 +1,7 @@
 package br.ftdev.pokedex
 
 import android.app.Application
+import br.ftdev.core.analytics.di.analyticsModule
 import br.ftdev.core.data.di.dataModule
 import br.ftdev.core.domain.di.domainModule
 import br.ftdev.core.ui.di.imageModule
@@ -20,6 +21,7 @@ class PokeDexApplication : Application() {
             androidContext(this@PokeDexApplication)
             modules(
                 dataModule,
+                analyticsModule,
                 imageModule,
                 domainModule,
                 featurePokeDexModule,
