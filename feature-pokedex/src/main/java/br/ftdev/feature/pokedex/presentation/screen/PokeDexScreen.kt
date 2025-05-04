@@ -42,6 +42,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import br.ftdev.core.domain.model.Pokemon
@@ -55,6 +56,7 @@ import br.ftdev.core.ui.component.eventSnackbarHost
 import br.ftdev.core.ui.component.shimmerPlaceholder
 import br.ftdev.core.ui.component.toImageRequest
 import br.ftdev.core.ui.component.toPaddedId
+import br.ftdev.core.ui.theme.AppShapes
 import br.ftdev.core.ui.theme.PokemonAppTheme
 import br.ftdev.core.ui.util.getVerticalGradient
 import br.ftdev.core.ui.util.loadBitmapFromUrl
@@ -97,7 +99,7 @@ fun PokedexScreen(
                         .padding(vertical = dimensionResource(R.dimen.padding_large))
                 )
                 searchQuery.SearchBar(
-                    placeholder = "Buscar Pokémon",
+                    placeholder = stringResource(R.string.search_placeholder),
                     onSearchQueryChanged = viewModel::onSearchQueryChanged
                 )
 
@@ -123,8 +125,8 @@ fun PokedexScreen(
                                         contentAlignment = Alignment.Center
                                     ) {
                                         Text(
-                                            if (searchQuery.isBlank()) "Nenhum Pokémon encontrado."
-                                            else "Nenhum Pokémon corresponde a \"$searchQuery\""
+                                            text = if (searchQuery.isBlank()) stringResource(R.string.empty_list)
+                                            else stringResource(R.string.empty_list_with_query, searchQuery)
                                         )
                                     }
                                 } else {
@@ -248,7 +250,7 @@ fun PokemonCard(
                     .align(Alignment.BottomCenter)
                     .padding(bottom = dimensionResource(id = R.dimen.padding_medium)),
                 color = Color.Black.copy(alpha = 0.6f),
-                shape = RoundedCornerShape(dimensionResource(id = R.dimen.chip_corner_radius))
+                shape = AppShapes.large
             ) {
                 Text(
                     text = "#${pokemon.id.toPaddedId()} ${pokemon.name}",
