@@ -160,7 +160,10 @@ fun PokedexScreen(
                                         pokemonList = state.pokemonList,
                                         canLoadMore = state.canLoadMore && searchQuery.isBlank(),
                                         onLoadMore = { viewModel.fetchPokemonList() },
-                                        onPokemonClick = onPokemonClick,
+                                        onPokemonClick = { pokemonId ->
+                                            onPokemonClick(pokemonId)
+                                            viewModel.onPokemonClick(pokemonId)
+                                        }
                                     )
                                 }
                             }

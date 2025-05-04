@@ -2,6 +2,7 @@ package br.ftdev.feature.pokedex.presentation
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import br.ftdev.core.analytics.AnalyticsTracker
 import br.ftdev.core.domain.model.Pokemon
 import br.ftdev.core.domain.usecase.GetPokemonListUseCase
 import br.ftdev.core.domain.usecase.RefreshPokemonListUseCase
@@ -23,7 +24,8 @@ private const val PAGE_SIZE = 20
 
 class PokeDexViewModel(
     private val getPokemonListUseCase: GetPokemonListUseCase,
-    private val refreshPokemonListUseCase: RefreshPokemonListUseCase
+    private val refreshPokemonListUseCase: RefreshPokemonListUseCase,
+    private val analytics: AnalyticsTracker
 ) : ViewModel() {
 
     private val _uiState =
@@ -46,6 +48,7 @@ class PokeDexViewModel(
 
 
     init {
+        analytics.trackScreen("PokedexScreen")
         fetchPokemonList()
 
         viewModelScope.launch {
@@ -56,7 +59,12 @@ class PokeDexViewModel(
     }
 
     fun onSearchQueryChanged(query: String) {
+        analytics.trackEvent("search_query", mapOf("query" to query))
         _searchQuery.value = query
+    }
+
+    fun onPokemonClick(pokemonId: Int) {
+        analytics.trackEvent("pokemon_selected", mapOf("pokemon_id" to pokemonId.toString()))
     }
 
     private fun filterAndUpdateUi(query: String) {
@@ -81,6 +89,7 @@ class PokeDexViewModel(
     }
 
     fun fetchPokemonList(forceRefresh: Boolean = false) {
+        analytics.trackEvent("fetch_pokemon_list", mapOf("forceRefresh" to forceRefresh.toString()))
         if (forceRefresh && !_isRefreshing.value) {
             cancelFetchListJob()
         }
@@ -103,6 +112,13 @@ class PokeDexViewModel(
 
     private fun handlePokemonFetchSuccess(newPokemon: List<Pokemon>) {
         canLoadMore = newPokemon.size == PAGE_SIZE
+        analytics.trackEvent(
+            "pokemon_list_loaded",
+            mapOf(
+                "page" to currentPage.toString(),
+                "loadedCount" to newPokemon.size.toString()
+            )
+        )
         pokemonList.addAll(newPokemon)
         if (newPokemon.isNotEmpty()) {
             currentPage++
@@ -115,6 +131,7 @@ class PokeDexViewModel(
 
     private suspend fun handlePokemonFetchFailure(exception: Throwable) {
         val errorMsg = exception.getErrorMessage()
+        analytics.trackEvent("pokemon_list_error", mapOf("error" to errorMsg))
 
         if (pokemonList.isEmpty()) {
             _uiState.value = PokedexUiState.Error(errorMsg)
@@ -145,6 +162,7 @@ class PokeDexViewModel(
         viewModelScope.launch {
             refreshPokemonListUseCase().first()
                 .onSuccess {
+                    analytics.trackEvent("list_refreshed")
                     fetchPokemonList(forceRefresh = true)
                 }
                 .onFailure { error ->
@@ -157,6 +175,7 @@ class PokeDexViewModel(
 
     private suspend fun handleRefreshError(error: Throwable) {
         val errorMsg = error.getErrorMessage(isRefresh = true)
+        analytics.trackEvent("list_refresh_error", mapOf("error" to errorMsg))
         _eventChannel.emit(PokeDexUiEvent.ShowSnackbar(errorMsg))
     }
 
