@@ -10,10 +10,6 @@ class FakeAnalytics {
     _loggedEvents += eventName to Bundle(params)
   }
 
-  fun reset() {
-    _loggedEvents.clear()
-  }
-
   companion object {
     object Event {
       const val SCREEN_VIEW = "screen_view"

@@ -2,6 +2,9 @@ package br.ftdev.core.data.mapper
 
 import br.ftdev.core.data.local.entity.PokemonDetailsEntity
 import br.ftdev.core.data.local.entity.PokemonEntity
+import br.ftdev.core.data.mapper.PokemonMappers.extractIdFromUrl
+import br.ftdev.core.data.mapper.PokemonMappers.toDomain
+import br.ftdev.core.data.mapper.PokemonMappers.toEntity
 import br.ftdev.core.data.remote.response.PokemonListItemResponse
 import br.ftdev.core.domain.model.Pokemon
 import org.junit.Assert.assertEquals
