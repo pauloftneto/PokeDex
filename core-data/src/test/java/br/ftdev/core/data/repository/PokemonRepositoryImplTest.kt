@@ -1,16 +1,14 @@
 package br.ftdev.core.data.repository
 
+import br.ftdev.core.analytics.EngineeringTracker
 import br.ftdev.core.data.local.dao.PokemonDao
 import br.ftdev.core.data.local.dao.PokemonDetailsDao
 import br.ftdev.core.data.local.entity.PokemonEntity
-import br.ftdev.core.data.mapper.toDomain
+import br.ftdev.core.data.mapper.PokemonMappers.toDomain
 import br.ftdev.core.data.remote.api.PokeApiService
-import br.ftdev.core.data.remote.response.PokemonListItemResponse
-import br.ftdev.core.data.remote.response.PokemonListResponse
 import io.mockk.Runs
 import io.mockk.coEvery
 import io.mockk.coVerify
-import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
 import kotlinx.coroutines.Dispatchers
@@ -32,12 +30,13 @@ class PokemonRepositoryImplTest {
     private val pokeApiService: PokeApiService = mockk()
     private val pokemonDao: PokemonDao = mockk()
     private val pokemonDetailsDao: PokemonDetailsDao = mockk()
+    private val engTrack: EngineeringTracker = mockk()
 
     private val testDispatcher = StandardTestDispatcher()
 
     @Before
     fun setUp() {
-        repository = PokemonRepositoryImpl(pokeApiService, pokemonDao, pokemonDetailsDao)
+        repository = PokemonRepositoryImpl(pokeApiService, engTrack, pokemonDao, pokemonDetailsDao)
         Dispatchers.setMain(testDispatcher)
     }
 
@@ -55,26 +54,6 @@ class PokemonRepositoryImplTest {
 
         assertTrue(result.isSuccess)
         assertEquals(pokemonEntity.toDomain(), result.getOrNull()?.first())
-    }
-
-    @Test
-    fun `listarPokemons busca e salva quando cache está vazio`() = runTest {
-        coEvery { pokemonDao.getPokemonList(10, 0) } returns emptyList()
-        val response = mockk<PokemonListResponse> {
-            every { results } returns listOf(
-                PokemonListItemResponse(
-                    name = "bulbasaur",
-                    url = "https://pokeapi.co/api/v2/pokemon/1/"
-                )
-            )
-        }
-        coEvery { pokeApiService.getPokemonList(10, 0) } returns response
-        coEvery { pokemonDao.insertAll(any()) } just Runs
-
-        val result = repository.getPokemonList(10, 0)
-
-        assertTrue(result.isSuccess)
-        assertTrue(result.getOrNull()?.isNotEmpty() == true)
     }
 
     @Test

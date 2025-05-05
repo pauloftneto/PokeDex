@@ -22,7 +22,7 @@ private const val POKEMON_IMAGE_URL = "https://raw.githubusercontent.com/PokeAPI
 object PokemonMappers : KoinComponent {
     private val tracker: EngineeringTracker by inject()
 
-    private fun extractIdFromUrl(url: String): Int? {
+    fun extractIdFromUrl(url: String): Int? {
         return url.trimEnd('/').substringAfterLast('/').toIntOrNull()
     }
 
@@ -36,7 +36,7 @@ object PokemonMappers : KoinComponent {
         )
     }
 
-    private fun PokemonEntity.toDomain(): Pokemon {
+    internal fun PokemonEntity.toDomain(): Pokemon {
         return Pokemon(
             id = id,
             name = name.replaceFirstChar {
