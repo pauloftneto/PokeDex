@@ -3,4 +3,11 @@
     <string name="error_generic_message">Ocorreu um erro inesperado.</string>
     <string name="retry">Tentar Novamente</string>
     <string name="loading">Carregando…</string>
+    <string name="app_name">PokeDex</string>
+    <string name="back">Voltar</string>
+    <string name="search_placeholder">Buscar Pokémon</string>
+    <string name="empty_list">Nenhum Pokémon encontrado.</string>
+    <string name="empty_list_with_query">Nenhum Pokémon corresponde a "%1$s"</string>
+    <string name="base_stats">Estatísticas Base</string>
+    <string name="content_filter">Filtrar</string>
 </resources>

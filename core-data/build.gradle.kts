@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.library)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.ksp)
 }
 
 android {
@@ -34,6 +35,9 @@ android {
 }
 
 dependencies {
+    implementation(project(":core-domain"))
+    implementation(project(":core-analytics"))
+
     // Kotlin & Coroutines
     implementation(libs.kotlin.stdlib)
     implementation(libs.kotlinx.coroutines.core)
@@ -49,15 +53,30 @@ dependencies {
     // Converter do Retrofit para Kotlinx Serialization
     implementation(libs.retrofit.kotlinx.serialization.converter)
 
+    // Room Persistence Library
+    implementation(libs.androidx.room.runtime)
+    implementation(libs.androidx.room.ktx)
+    ksp(libs.androidx.room.compiler)
+
     // Dependency Injection (Koin)
     // Koin Core features
     implementation(libs.koin.core)
     // Koin Android features
     implementation(libs.koin.android)
-    // Koin for Jetpack Compose (se usar Compose futuramente)
-    // implementation("io.insert-koin:koin-androidx-compose:3.5.3")
 
-    // Koin Test features
+    // Testes Unitários
+    testImplementation(libs.junit)
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.turbine)
+    testImplementation(libs.truth)
     testImplementation(libs.koin.test)
     testImplementation(libs.koin.test.junit4)
+    testImplementation(libs.mockwebserver)
+
+    // Testes Instrumentados
+    debugImplementation(libs.androidx.ui.test.manifest)
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    androidTestImplementation(libs.truth)
+
 }

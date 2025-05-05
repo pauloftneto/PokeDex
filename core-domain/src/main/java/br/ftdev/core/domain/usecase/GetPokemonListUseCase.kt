@@ -1,19 +1,17 @@
 package br.ftdev.core.domain.usecase
 
-import br.ftdev.core.data.repository.PokemonRepository
-import br.ftdev.core.domain.mapper.toDomain
 import br.ftdev.core.domain.model.Pokemon
+import br.ftdev.core.domain.repository.PokemonRepository
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 
 class GetPokemonListUseCase(
     private val pokemonRepository: PokemonRepository
 ) {
-    suspend operator fun invoke(limit: Int, offset: Int): Flow<Result<List<Pokemon>>> = flow {
+    operator fun invoke(limit: Int, offset: Int): Flow<Result<List<Pokemon>>> = flow {
         pokemonRepository.getPokemonList(limit, offset)
-            .onSuccess { responseDto ->
-                val domainList = responseDto.results.mapNotNull { it.toDomain() }
-                emit(Result.success(domainList))
+            .onSuccess { result ->
+                emit(Result.success(result))
             }
             .onFailure { exception ->
                 emit(Result.failure(exception))

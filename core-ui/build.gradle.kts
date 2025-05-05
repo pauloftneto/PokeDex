@@ -45,8 +45,11 @@ android {
 }
 
 dependencies {
-// Kotlin Standard Library
+    // Kotlin Standard Library
     implementation(libs.kotlin.stdlib)
+
+    // Koin Android features
+    implementation(libs.koin.android)
 
     // Dependências Principais do Jetpack Compose
     implementation(platform(libs.androidx.compose.bom))
@@ -55,20 +58,12 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.coil.compose)
+    implementation(libs.androidx.palette.ktx)
+    implementation(libs.accompanist.placeholder)
 
     // AndroidX Core (necessário para algumas funcionalidades do Compose)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
 
-    testImplementation(libs.junit)
-    androidTestImplementation(libs.androidx.junit)
-    androidTestImplementation(libs.androidx.espresso.core)
-    androidTestImplementation(platform(libs.androidx.compose.bom))
-
-    // Testes de UI com Compose
-    androidTestImplementation(libs.androidx.ui.test.junit4)
-
-    // Debugging de UI com Compose
-    debugImplementation(libs.androidx.ui.tooling)
-    debugImplementation(libs.androidx.ui.test.manifest)
 }
